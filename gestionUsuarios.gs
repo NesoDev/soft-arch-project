@@ -59,3 +59,31 @@ function manageUsers() {
   // Por ejemplo, usando HTML Service para crear una interfaz web.
   Logger.log(users);
 }
+
+// Función para buscar usuarios
+function searchUsers(query) {
+  const users = getUsers();
+  return users.filter(user => 
+    user.Nombre.includes(query) || user.Rol.includes(query)
+  );
+}
+
+// Función para mostrar la interfaz
+function showInterface() {
+  const html = HtmlService.createHtmlOutputFromFile("Interface")
+    .setWidth(600)
+    .setHeight(400);
+  SpreadsheetApp.getUi().showModalDialog(html, "Gestión de Usuarios");
+}
+
+function onOpen() {
+  const ui = SpreadsheetApp.getUi();
+  ui.createMenu("Administrador")
+    .addItem("Gestionar Usuarios", "showInterface")
+    .addToUi();
+}
+
+function exampleUsage() {
+  manageUsers(); // Mostrar usuarios
+  deleteUser("usuario@example.com"); // Eliminar usuario
+}
