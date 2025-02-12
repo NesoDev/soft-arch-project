@@ -41,7 +41,7 @@ function logAction(action) {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(NOMBRE_DE_HOJA);
   sheet.appendRow([new Date(), Session.getActiveUser().getEmail(), action]);
 }
-
+// prueba
 // Función para enviar notificaciones al usuario
 function sendNotification(email, message) {
   MailApp.sendEmail(email, "Notificación del sistema", message);
