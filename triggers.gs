@@ -8,12 +8,12 @@ function triggerAgregarTarifaFormulario(e) {
 }
 
 function triggerCalcularMontos(e) {
-    var sheet = e.source.getSheetByName("Respuestas");
+    var sheet = e.source.getSheetByName("RecibosAgua");
     var range = e.range;
     var row = range.getRow();
     var col = range.getColumn();
   
-    if (sheet.getName() !== "Respuestas") return;
+    if (sheet.getName() !== "RecibosAgua") return;
 
     var colLecturaAnterior = 9;
     var colLecturaActual = 10;

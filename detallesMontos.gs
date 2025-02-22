@@ -1,6 +1,6 @@
 function calcularMontosParaFila(row) {
     var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var sheetRespuestas = ss.getSheetByName("Respuestas");
+    var sheetRespuestas = ss.getSheetByName("RecibosAgua");
     var sheetTarifas = ss.getSheetByName("TarifasAgua");
 
     var dataTarifas = sheetTarifas.getDataRange().getValues();
