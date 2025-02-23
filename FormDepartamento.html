@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100%;
+      }
+      .container {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+        width: 100%;
+        max-width: 400px;
+      }
+      h3 {
+        text-align: center;
+      }
+      label {
+        font-weight: bold;
+        display: block;
+        margin-top: 10px;
+      }
+      input {
+        width: 100%;
+        padding: 8px;
+        margin-top: 5px;
+        border-radius: 5px;
+        border: 1px solid #ddd;
+      }
+      button{
+         all:none; 
+         display:block;
+         background-color:#145DA0;
+         color: white;
+         font-size: 16px;
+         font-weight: bold;
+         text-decoration: none;
+         border: 1px solid #ccc;
+         margin:5px auto;
+         padding: 15px 5px;
+         border-radius: 10px;
+         text-align:center;
+       }
+       button:hover {
+         background-color: #2E8BC0;
+       }
+    </style>
+    
+  </head>
+  <body>
+    <form id="departmentForm" class="container">
+      <h3>Editar Departamento</h3>
+      <input type="number" id="id" value="<?= id ?>">
+
+      <label>Condicion del departamento:</label>
+      <input type="text" id="condition" value="<?= condition ?>">
+
+      <label>Costo del departamento:</label>
+      <input type="text" id="cost" value="<?= cost ?>">
+
+      <label>Pago del alquiler:</label>
+      <input type="date" id="rentalDate" value="<?= rentalDate ?>">
+
+      <label>Pago de servicios:</label>
+      <input type="date" id="serviceDate" value="<?= serviceDate ?>">
+
+      <label>Detalles de la garantía:</label>
+      <input type="text" id="warranty" value="<?= warranty ?>">
+
+      <label>Estado del departamento:</label>
+      <input type="text" id="state" value="<?= state ?>">
+
+      <label>Fotos o video:</label>
+      <input type="text" id="photo" value="<?= photo ?>">
+
+      <button onclick="newData()">Guardar Cambios</button>
+    </form>
+    <script>
+  function newData() {
+    var dataForm = {
+      id: document.getElementById('id').value,
+      condition: document.getElementById('condition').value,
+      cost: document.getElementById('cost').value,
+      rentalDate: document.getElementById('rentalDate').value,
+      serviceDate: document.getElementById('serviceDate').value,
+      warranty: document.getElementById('warranty').value,
+      state: document.getElementById('state').value,
+      photo: document.getElementById('photo').value
+    };
+
+    google.script.run
+      .withSuccessHandler(function (msg) {
+        alert(msg); // Muestra el mensaje de éxito o error
+        google.script.host.close(); // Cierra la ventana modal
+      })
+      .withFailureHandler(function (err) {
+        alert("❌ Error al guardar los cambios: " + err.message);
+      })
+      .editionDepartment(dataForm);
+  }
+</script>
+
+    
+  </body>
+</html>
