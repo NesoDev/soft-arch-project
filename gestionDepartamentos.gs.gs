@@ -1,4 +1,4 @@
-function onOpen(e) {
+/*function onOpen(e) {
   filtrarPropiedadesPorUsuario();
   var ui = SpreadsheetApp.getUi();
   var menuPrincipal = ui.createMenu('Gestión Inmobiliaria');
@@ -17,7 +17,10 @@ function onOpen(e) {
   menuPrincipal.addSubMenu(submenuPropiedades);
   menuPrincipal.addSubMenu(submenuDepartamentos);
   menuPrincipal.addToUi();
-}
+}*/
+
+
+
 
 function addDepartment() {
   const ui = SpreadsheetApp.getUi();

@@ -1,6 +1,3 @@
-
-
-
 function mostrarMenuGestion(){
     var ui = SpreadsheetApp.getUi();
     var menuPrincipal = ui.createMenu('Gestión Inmobiliaria');
@@ -9,6 +6,7 @@ function mostrarMenuGestion(){
         .addItem("Editar Propiedad", "editarPropiedad")
         .addItem("Eliminar Propiedad", "eliminarPropiedad")
         .addItem("Ver Propiedades", "verDepartamentos")
+        .addItem("Filtrar Propiedades", "filtrarPropiedadesPorUsuario")
 
     var submenuDepartamentos = ui.createMenu('Departamentos')
         .addItem('Agregar Departamento', 'addDepartment')
@@ -18,7 +16,10 @@ function mostrarMenuGestion(){
     // Agregar submenús al menú principal
     menuPrincipal.addSubMenu(submenuPropiedades);
     menuPrincipal.addSubMenu(submenuDepartamentos);
-    menuPrincipal.addToUi();
+
+    //menuPrincipal.addToUi();
+
+    return menuPrincipal;
 }
 
 function obtenerHoja() {
@@ -335,6 +336,7 @@ function filtrarPropiedadesPorUsuario() {
     }
 
     
+
     var usuario = Session.getActiveUser().getEmail();
     var datosUsuarios = hojaUsuarios.getDataRange().getValues();
     var idPropietario = null;
@@ -343,7 +345,7 @@ function filtrarPropiedadesPorUsuario() {
     Logger.log("Correo usuario activo: " + usuario);
     
     for (var i = 1; i < datosUsuarios.length; i++) {
-        if (datosUsuarios[i][2] === usuario) { 
+        if (datosUsuarios[i][2].toString().trim() === usuario.trim()){ 
             idPropietario = datosUsuarios[i][0]; 
             break;
         }
@@ -356,6 +358,8 @@ function filtrarPropiedadesPorUsuario() {
 
     
     var datosPropiedades = hojaPropiedades.getDataRange().getValues();
+    hojaPropiedades.showRows(1, hojaPropiedades.getMaxRows());
+    
 
     for (var j = 1; j < datosPropiedades.length; j++) {
         var idArrendador = datosPropiedades[j][17]; 
@@ -365,5 +369,42 @@ function filtrarPropiedadesPorUsuario() {
         } else {
             hojaPropiedades.showRows(j + 1); 
         }
+
     }
+ }
+
+
+
+
+/*function crearTriggerFiltrado() {
+    eliminarTriggersFiltrado(); 
+
+    ScriptApp.newTrigger("filtrarPropiedadesPorUsuario")
+        .timeBased()
+        .after(100) 
+        .create();
+    
+    SpreadsheetApp.getUi().alert("Trigger creado exitosamente. Se ejecutará automáticamente.");
 }
+
+
+function eliminarTriggersFiltrado() {
+    var triggers = ScriptApp.getProjectTriggers();
+    for (var i = 0; i < triggers.length; i++) {
+        if (triggers[i].getHandlerFunction() === "filtrarPropiedadesPorUsuario") {
+            ScriptApp.deleteTrigger(triggers[i]);
+        }
+    }
+}*/
+
+var GestionPropiedades = {
+  mostrarMenuGestion: mostrarMenuGestion
+}
+
+
+
+
+
+
+
+

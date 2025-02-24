@@ -1,40 +1,37 @@
-const ADMINISTRADORES = new Set([ // Lista de correos de administradores
-  'thulobruno@gmail.com',
-  'bruno.pumapillo@unmsm.edu.pe'
-]);
-// **Configurar**: Cambiar nombres de hojas según tu proyecto.
 const HOJA_USUARIOS = 'GestionUsuarios';
 const PROPIETARIOS = 'Usuarios_Propietarios';
 const INQUILINOS = 'Usuarios_Inquilinos';
 const HOJA_HISTORIAL = 'Historial';
+const ADMINISTRADORES = new Set([ // Lista de correos de administradores
+  'thulobruno@gmail.com',
+  'bruno.pumapillo@unmsm.edu.pe'
+  ]);
 
-function onOpen(e) {
-  
-  
-  var usuarioActual = e && e.user ? e.user.getEmail() : Session.getActiveUser().getEmail(); 
-  //if (usuarioActual !== ADMINISTRADOR) return; // Si no es el admin, no ejecuta el menú
-  // Verificar si el usuario actual está en la lista de administradores
-  if (!ADMINISTRADORES.has(usuarioActual)) return;
+function gestionUsuariosItem() {
   var ui = SpreadsheetApp.getUi();
-
-  // Submenú de Usuarios
+  var usuarioActual = Session.getActiveUser().getEmail(); // Obtener el usuario actual
+  
+  // Verificar si el usuario es administrador
+  if (!ADMINISTRADORES || !ADMINISTRADORES.has(usuarioActual)) return null;
+  
+  // Submenú de Usuarios Propietarios
   var submenuUsuariosPropietarios = ui.createMenu('Propietarios')
     .addItem('Ver Propietarios', 'mostrarUsuariosPropietarios')
     .addItem('Eliminar Propietarios', 'eliminarUsuariosPropietarios');
-
+  
+  // Submenú de Usuarios Inquilinos
   var submenuUsuariosInquilinos = ui.createMenu('Inquilinos')
     .addItem('Ver Inquilinos', 'mostrarUsuariosInquilinos')
     .addItem('Eliminar Inquilinos', 'eliminarUsuariosInquilinos');
-
-  // Menú Principal
-  var menuPrincipal = ui.createMenu('Gestión de Usuarios')
+  
+  // Menú de Gestión de Usuarios
+  var menuGestionUsuarios = ui.createMenu('Gestión de Usuarios')
     .addSubMenu(submenuUsuariosPropietarios)
-    .addSubMenu(submenuUsuariosInquilinos)
-    .addToUi();
-
-
-    
+    .addSubMenu(submenuUsuariosInquilinos);
+  
+  return menuGestionUsuarios; // Devolver el menú creado
 }
+
 
 function mostrarUsuariosPropietarios(){
   mostrarUsuarios(PROPIETARIOS);
@@ -195,5 +192,6 @@ function generarID(hojaSheet){
 
 var GestionUsuarios = {
   mostrarUsuarios: mostrarUsuarios,
-  eliminarUsuario: eliminarUsuario
+  eliminarUsuario: eliminarUsuario,
+  gestionUsuariosItem: gestionUsuariosItem
 };
