@@ -112,6 +112,7 @@ function editarPropiedad() {
     var datos = hoja.getDataRange().getValues();
 
     for (var i = 1; i < datos.length; i++) {
+        if (hoja.isRowHiddenByUser(i + 1)) continue;
         if (datos[i][0] == id) {
             var propiedad = datos[i]; 
             var template = HtmlService.createTemplateFromFile("FormularioEdicion");
@@ -297,7 +298,8 @@ function obtenerIdUsuarioPorCorreo(hojaUsuarios, correo) {
 
 
 function filtrarDepartamentos(idPropiedad) {
-    var hoja = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Departamentos");
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var hoja = ss.getSheetByName("Departamentos");
     if (!hoja) {
         SpreadsheetApp.getUi().alert("No se encontró la hoja de Departamentos");
         return;
@@ -321,6 +323,8 @@ function filtrarDepartamentos(idPropiedad) {
     if (!hayDepartamentos) {
         SpreadsheetApp.getUi().alert("Propiedad sin departamentos asociados.");
     }
+
+    ss.setActiveSheet(hoja);
     
 }
 
