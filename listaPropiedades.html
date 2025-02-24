@@ -57,12 +57,12 @@
             propiedades.forEach(propiedad => {
                 var item = document.createElement("li");
                 item.innerHTML = `${propiedad.nombre} 
-                    <button onclick="verDepartamentos('${propiedad.id}')">Ver Departamentos</button>`;
+                    <button onclick="mostrarDepartamentos('${propiedad.id}')">Ver Departamentos</button>`;
                 lista.appendChild(item);
             });
         }
 
-        function verDepartamentos(idPropiedad) {
+        function mostrarDepartamentos(idPropiedad) {
             google.script.run.filtrarDepartamentos(idPropiedad);
             google.script.host.close();
         }

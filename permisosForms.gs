@@ -1,7 +1,11 @@
 function actualizarPermisosEncuestados() {
-  var hojaPropietarios = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Usuarios_Propietarios"); // Hoja donde están los propietarios
-  var formId = "1FAIpQLScE5DflEXqQYp9K-naRKoeXhpgPVYi-KBobl8TSqbhv23hwOQ";
-  var formFile = DriveApp.getFileById(formId);
+  var hojaPropietarios = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Usuarios_Propietarios");
+
+  var formIds = [
+    "1FAIpQLScE5DflEXqQYp9K-naRKoeXhpgPVYi-KBobl8TSqbhv23hwOQ",
+    "1QE6VLoKNXAgT0E-Os4VWWEI9ZfMyE0g1_pmy9wwBNJY"
+  ];
+
   var datos = hojaPropietarios.getDataRange().getValues();
   var correosPropietarios = [];
 
@@ -11,16 +15,24 @@ function actualizarPermisosEncuestados() {
     }
   }
 
-  var permisosActuales = formFile.getEditors();
-  for (var i = 0; i < permisosActuales.length; i++) {
-    formFile.removeEditor(permisosActuales[i]);
-  }
+  formIds.forEach(function(formId) {
+    try {
+      var formFile = DriveApp.getFileById(formId);
+      var permisosActuales = formFile.getEditors();
 
-  for (var j = 0; j < correosPropietarios.length; j++) {
-    formFile.addViewer(correosPropietarios[j]);
-  }
+      permisosActuales.forEach(function(editor) {
+        formFile.removeEditor(editor);
+      });
 
-  Logger.log("Se actualizaron los permisos de encuestado para: " + correosPropietarios.join(", "));
+      correosPropietarios.forEach(function(correo) {
+        formFile.addViewer(correo);
+      });
+
+      Logger.log("Se actualizaron los permisos de encuestado para el formulario " + formId + " con los correos: " + correosPropietarios.join(", "));
+    } catch (error) {
+      Logger.log("Error al actualizar permisos para el formulario " + formId + ": " + error.message);
+    }
+  });
 }
 
 /*function actualizarPermisosEncuestados() {

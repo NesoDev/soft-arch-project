@@ -308,9 +308,9 @@ function filtrarDepartamentos(idPropiedad) {
 
     hoja.showRows(2, datos.length - 1);
     var hayDepartamentos = false; 
-
+//Columan de ID propiedad actualizada
     for (var i = 1; i < datos.length; i++) {
-        var idDepartamento = datos[i][9]; 
+        var idDepartamento = datos[i][8]; 
         if (idDepartamento == idPropiedad) {
             hayDepartamentos = true;  
         } else {
@@ -321,6 +321,7 @@ function filtrarDepartamentos(idPropiedad) {
     if (!hayDepartamentos) {
         SpreadsheetApp.getUi().alert("Propiedad sin departamentos asociados.");
     }
+    
 }
 
 
