@@ -109,13 +109,13 @@ function editPropiedad(propiedadId, nuevoNombre, nuevaDireccion, nuevaReferencia
 
 function deletePropiedad(propiedadId) {
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Propiedades');
-  var cell = sheet.getRange("E:E").createTextFinder(propiedadId).findNext(); 
+  var cell = sheet.getRange("A:A").createTextFinder(propiedadId).findNext(); 
 
   if (!cell) {
     return "❌ Error: No se encontró la propiedad.";
   }
 
-  var rowIndex = cell.getRow(); // Obtener la fila real
+  var rowIndex = cell.getRow(); 
   sheet.deleteRow(rowIndex);
 
   return "❌ Propiedad eliminada correctamente.";
