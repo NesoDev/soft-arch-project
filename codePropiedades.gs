@@ -16,9 +16,19 @@ function addPropiedad(nombre, direccion, referencia, cantidadDeptos, area, numPi
 
   var imageUrl = "Sin imagen";
     if (fileData) {
-        var folder = DriveApp.getFolderById("1dsA0jIWyKE7AzMbjuiqEVtEj1GqxKwjI"); // Reemplaza con tu carpeta en Drive
+        var rootFolder = DriveApp.getRootFolder(); 
+        var folderName= "Fotos Rendo - "+email; 
+        var folders = rootFolder.getFoldersByName(folderName);
+        var userFolder;
+
+        if (folders.hasNext()) {
+          userFolder = folders.next(); 
+        } else {
+          userFolder = rootFolder.createFolder(folderName); 
+        }
+        
         var blob = Utilities.newBlob(Utilities.base64Decode(fileData), "image/png", nombre + ".png");
-        var file = folder.createFile(blob);
+        var file = userFolder.createFile(blob);
         imageUrl = file.getUrl();
     }
 
@@ -75,6 +85,7 @@ function getPropiedades() {
 }
 
 function editPropiedad(propiedadId, nuevoNombre, nuevaDireccion, nuevaReferencia, nuevaCantidadDeptos, nuevaAreaProp, nuevosServicios, nuevoNumPisosProp, nuevoEstacionamiento, nuevaFotoProp) {
+  var email = Session.getActiveUser().getEmail();
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Propiedades');
   var cell = sheet.getRange("A:A").createTextFinder(propiedadId).findNext(); 
   
@@ -95,9 +106,19 @@ function editPropiedad(propiedadId, nuevoNombre, nuevaDireccion, nuevaReferencia
 
   var imageUrl = sheet.getRange(rowIndex, 12).getValue(); 
   if (nuevaFotoProp) {
-    var folder = DriveApp.getFolderById("1dsA0jIWyKE7AzMbjuiqEVtEj1GqxKwjI"); 
+    var rootFolder = DriveApp.getRootFolder();
+    var folderName = "Fotos Rendo - "+email; 
+    var folders = rootFolder.getFoldersByName(folderName);
+    var userFolder;
+
+    if (folders.hasNext()) {
+      userFolder = folders.next(); 
+    } else {
+      userFolder = rootFolder.createFolder(folderName); 
+    }
+    
     var blob = Utilities.newBlob(Utilities.base64Decode(nuevaFotoProp), "image/png", nuevoNombre + ".png");
-    var file = folder.createFile(blob);
+    var file = userFolder.createFile(blob);
     imageUrl = file.getUrl();
   }
 
@@ -143,6 +164,18 @@ function getPropiedadPorId(propiedadId) {
     }
   }
   return null; 
+}
+
+
+function validarFormulario() {
+    let serviciosSeleccionados = document.querySelectorAll('input[type="checkbox"]:checked').length;
+    
+    if (serviciosSeleccionados === 0) {
+        alert("Debe seleccionar al menos un servicio.");
+        return false;
+    }
+
+    return true;
 }
 
 

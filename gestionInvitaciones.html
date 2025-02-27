@@ -1,5 +1,17 @@
 <div>
-  <h2>Gestión de Invitapapus</h2>
+  <h2>Gestión de Invitaciones</h2>
+
+  <!-- Botones CRUD -->
+  <button onclick="mostrarFormularioInvitacion('enviarInv')">📩 Enviar Invitación</button>
+  <button onclick="mostrarFormularioInvitacion('cancelarInv')">❌ Cancelar Invitación</button>
+  <button onclick="cargarInvitaciones()">🔄 Actualizar Listado</button>
+
+  <!-- Contenedor para formularios -->
+  <div id="formularioInvitacion" style="display:none;"></div>
+
+  <!-- Lista de invitaciones -->
+  <h3>Mis Invitaciones</h3>
+  <ul id="listaInvitaciones"></ul>
 
   <button onclick="volverAlMenu()">Volver al Menú Principal</button>
 </div>
