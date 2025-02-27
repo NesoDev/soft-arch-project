@@ -74,21 +74,38 @@ function getPropiedades() {
   return propiedades;
 }
 
-function editPropiedad(propiedadId, nuevoNombre, nuevaDireccion) {
+function editPropiedad(propiedadId, nuevoNombre, nuevaDireccion, nuevaReferencia, nuevaCantidadDeptos, nuevaAreaProp, nuevosServicios, nuevoNumPisosProp, nuevoEstacionamiento, nuevaFotoProp) {
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Propiedades');
-  var cell = sheet.getRange("E:E").createTextFinder(propiedadId).findNext(); // Suponiendo que la columna E contiene los IDs
+  var cell = sheet.getRange("A:A").createTextFinder(propiedadId).findNext(); 
   
   if (!cell) {
     return "❌ Error: No se encontró la propiedad.";
   }
 
-  var rowIndex = cell.getRow(); // Obtener la fila real
+  var rowIndex = cell.getRow(); 
 
-  sheet.getRange(rowIndex, 2).setValue(nuevoNombre); // Columna B (Nombre)
-  sheet.getRange(rowIndex, 3).setValue(nuevaDireccion); // Columna C (Dirección)
+  sheet.getRange(rowIndex, 3).setValue(nuevoNombre); 
+  sheet.getRange(rowIndex, 4).setValue(nuevaDireccion); 
+  sheet.getRange(rowIndex, 5).setValue(nuevaReferencia); 
+  sheet.getRange(rowIndex, 6).setValue(nuevaCantidadDeptos); 
+  sheet.getRange(rowIndex, 7).setValue(nuevaAreaProp); 
+  sheet.getRange(rowIndex, 8).setValue(nuevosServicios); 
+  sheet.getRange(rowIndex, 9).setValue(nuevoNumPisosProp); 
+  sheet.getRange(rowIndex, 10).setValue(nuevoEstacionamiento); 
+
+  var imageUrl = sheet.getRange(rowIndex, 12).getValue(); 
+  if (nuevaFotoProp) {
+    var folder = DriveApp.getFolderById("1dsA0jIWyKE7AzMbjuiqEVtEj1GqxKwjI"); 
+    var blob = Utilities.newBlob(Utilities.base64Decode(nuevaFotoProp), "image/png", nuevoNombre + ".png");
+    var file = folder.createFile(blob);
+    imageUrl = file.getUrl();
+  }
+
+  sheet.getRange(rowIndex, 12).setValue(imageUrl);
 
   return "✏️ Propiedad actualizada correctamente.";
 }
+
 
 function deletePropiedad(propiedadId) {
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Propiedades');

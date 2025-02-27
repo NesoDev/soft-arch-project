@@ -114,12 +114,38 @@
           form.innerHTML = `
             <h3>✏️ Editar Propiedad</h3>
             ${opciones}
-            <input type="text" id="nuevoNombre" placeholder="Nuevo Nombre">
-            <input type="text" id="nuevaDireccion" placeholder="Nueva Dirección">
+            <br><br>
+            <input type="text" id="nuevoNombre" placeholder="Nuevo Nombre"><br><br>
+            <input type="text" id="nuevaDireccion" placeholder="Nueva Dirección"><br><br>
+            <input type="text" id="nuevaReferencia" placeholder="Nueva Referencia"><br><br>
+            <input type="number" id="nuevaCantidadDeptos" placeholder="Cantidad de Departamentos"><br><br>
+            <input type="number" id="nuevaAreaProp" placeholder="Área en m²"><br><br>
+            <label><b>Servicios</b></label><br>
+            <div>
+              <input type="checkbox" id="nuevoServicioLuz" value="Luz">
+              <label for="nuevoServicioLuz">Luz</label>
+              
+              <input type="checkbox" id="nuevoServicioAgua" value="Agua">
+              <label for="nuevoServicioAgua">Agua</label>
+            </div><br>
+            <input type="number" id="nuevoNumPisosProp" placeholder="Número de Pisos"><br><br>
+            <label><b>Estacionamiento</b></label>
+            <div>
+              <input type="radio" id="nuevoEstSi" name="nuevoEstacionamiento" value="Sí">
+              <label for="nuevoEstSi">Sí</label>
+              
+              <input type="radio" id="nuevoEstNo" name="nuevoEstacionamiento" value="No">
+              <label for="nuevoEstNo">No</label>
+            </div>
+            <br>
+            <label><b>Foto</b></label><br>
+            <input type="file" id="nuevaFotoProp">
+
             <button onclick="editarPropiedad()">Guardar Cambios</button>
             <button onclick="ocultarFormulario()">Cancelar</button>
           `;
         } 
+
         else if (accion === 'eliminarProp') {
           form.innerHTML = `
             <h3>❌ Eliminar Propiedad</h3>
@@ -195,6 +221,22 @@
     var id = propiedadSelect.value.trim();
     var nuevoNombre = document.getElementById("nuevoNombre").value.trim();
     var nuevaDireccion = document.getElementById("nuevaDireccion").value.trim();
+    var nuevaReferencia = document.getElementById("nuevaReferencia").value.trim();
+    var nuevaCantidadDeptos = document.getElementById("nuevaCantidadDeptos").value.trim();
+    var nuevaAreaProp = document.getElementById("nuevaAreaProp").value.trim();
+    var nuevoNumPisosProp = document.getElementById("nuevoNumPisosProp").value.trim();
+    var nuevaFotoProp = document.getElementById("nuevaFotoProp").files.length > 0 ? document.getElementById("nuevaFotoProp").files[0] : null;
+
+    
+    var nuevoServicioLuz = document.getElementById("nuevoServicioLuz").checked ? "Luz" : "";
+    var nuevoServicioAgua = document.getElementById("nuevoServicioAgua").checked ? "Agua" : "";
+    var nuevosServicios = [nuevoServicioLuz, nuevoServicioAgua].filter(Boolean).join(", ");
+
+    
+    var nuevoEstacionamiento = document.querySelector('input[name="nuevoEstacionamiento"]:checked');
+    nuevoEstacionamiento = nuevoEstacionamiento ? nuevoEstacionamiento.value : "";
+
+
 
     if (!id) {
         alert("Por favor, selecciona una propiedad.");
@@ -207,7 +249,7 @@
         alert(msg);
         ocultarFormulario();
         cargarPropiedades();
-    }).editPropiedad(id, nuevoNombre, nuevaDireccion); // No usar parseInt(id)
+    }).editPropiedad(id, nuevoNombre, nuevaDireccion, nuevaReferencia, nuevaCantidadDeptos, nuevaAreaProp, nuevosServicios, nuevoNumPisosProp, nuevoEstacionamiento, nuevaFotoProp);  
   }
 
   function eliminarPropiedad() {
