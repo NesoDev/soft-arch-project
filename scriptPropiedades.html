@@ -71,36 +71,46 @@
     if (accion === 'crearProp') {
       form.innerHTML = `
         <h3>➕ Crear Propiedad</h3>
-
-        <input type="text" id="nombreProp" placeholder="Nombre de la Propiedad"><br><br>
-        <input type="text" id="direccionProp" placeholder="Dirección"><br><br>
-        <input type="text" id="referenciaProp" placeholder="Referencia"><br><br>
-        <input type="number" id="cantidadDeptos" placeholder="Cantidad de Departamentos"><br><br>
-        <input type="number" id="areaProp" placeholder="Área en m²"><br><br>
-        <label><b>Servicios</b></label><br>
-        <div>
-          <input type="checkbox" id="servicioLuz" value="Luz">
-          <label for="servicioLuz">Luz</label>
-          
-          <input type="checkbox" id="servicioAgua" value="Agua">
-          <label for="servicioAgua">Agua</label>
-        </div><br>
-        <input type="number" id="numPisosProp" placeholder="Número de Pisos"><br><br>
-        <label><b>Estacionamiento</b></label>
-        <div>
-          <input type="radio" id="estSi" name="estacionamiento" value="Sí">
-          <label for="estSi">Sí</label>
-          
-          <input type="radio" id="estNo" name="estacionamiento" value="No">
-          <label for="estNo">No</label>
-        </div>
-        <br>
-        <label><b>Foto</b></label><br>
-        <input type="file" id="fotoProp">
-        <button onclick="crearPropiedad()">Guardar</button>
-        <button onclick="ocultarFormulario()">Cancelar</button>
+        <form id="crearPropiedadForm">
+          <input type="text" id="nombreProp" placeholder="Nombre de la Propiedad" required><br><br>
+          <input type="text" id="direccionProp" placeholder="Dirección" required><br><br>
+          <input type="text" id="referenciaProp" placeholder="Referencia" required><br><br>
+          <input type="number" id="cantidadDeptos" placeholder="Cantidad de Departamentos" required min="1"><br><br>
+          <input type="number" id="areaProp" placeholder="Área en m²" required><br><br>
+          <label><b>Servicios (Selecciona al menos uno)</b></label><br>
+          <div>
+            <input type="checkbox" id="servicioLuz" value="Luz">
+            <label for="servicioLuz">Luz</label>
+            
+            <input type="checkbox" id="servicioAgua" value="Agua">
+            <label for="servicioAgua">Agua</label>
+          </div><br>
+          <input type="number" id="numPisosProp" placeholder="Número de Pisos" required min="1"><br><br>
+          <label><b>Estacionamiento</b></label>
+          <div>
+            <input type="radio" id="estSi" name="estacionamiento" value="Sí" required>
+            <label for="estSi">Sí</label>
+            
+            <input type="radio" id="estNo" name="estacionamiento" value="No" required>
+            <label for="estNo">No</label>
+          </div>
+          <br>
+          <label><b>Foto</b></label><br>
+          <input type="file" id="fotoProp" required>
+          <button type="submit">Guardar</button>
+          <button type="button" onclick="ocultarFormulario()">Cancelar</button>
+        </form>
       `;
-    } 
+
+        document.getElementById("crearPropiedadForm").addEventListener("submit", function(event) {
+            event.preventDefault(); 
+            
+            if (validarFormulario()) {
+                crearPropiedad(); 
+            }
+        });
+      }
+   
     else if (accion === 'editarProp' || accion === 'eliminarProp') {
       google.script.run.withSuccessHandler(function(propiedades) {
         var opciones = `<select id="propiedadSeleccionada" onchange="cargarDatosPropiedad()">
@@ -115,17 +125,18 @@
             <h3>✏️ Editar Propiedad</h3>
             ${opciones}
             <br><br>
+            <form id="editarPropiedadForm">
             <label><b>Nombre:</b></label><br>
-            <input type="text" id="nuevoNombre" placeholder="Nuevo Nombre"><br><br>
+            <input type="text" id="nuevoNombre" placeholder="Nuevo Nombre" required><br><br>
             <label><b>Dirección::</b></label><br>
-            <input type="text" id="nuevaDireccion" placeholder="Nueva Dirección"><br><br>
+            <input type="text" id="nuevaDireccion" placeholder="Nueva Dirección" required><br><br>
             <label><b>Referencia:</b></label><br>
-            <input type="text" id="nuevaReferencia" placeholder="Nueva Referencia"><br><br>
+            <input type="text" id="nuevaReferencia" placeholder="Nueva Referencia" required><br><br>
             <label><b>N°de Departamentos:</b></label><br>
-            <input type="number" id="nuevaCantidadDeptos" placeholder="Cantidad de Departamentos"><br><br>
+            <input type="number" id="nuevaCantidadDeptos" placeholder="Cantidad de Departamentos" required min="1"><br><br>
             <label><b>Área en m²:</b></label><br>
-            <input type="number" id="nuevaAreaProp" placeholder="Área en m²"><br><br>
-            <label><b>Servicios</b></label><br>
+            <input type="number" id="nuevaAreaProp" placeholder="Área en m²" required><br><br>
+            <label><b>Servicios (Selecciona al menos uno)</b></label><br>
             <div>
               <input type="checkbox" id="nuevoServicioLuz" value="Luz">
               <label for="nuevoServicioLuz">Luz</label>
@@ -133,22 +144,31 @@
               <input type="checkbox" id="nuevoServicioAgua" value="Agua">
               <label for="nuevoServicioAgua">Agua</label>
             </div><br>
-            <input type="number" id="nuevoNumPisosProp" placeholder="Número de Pisos"><br><br>
+            <input type="number" id="nuevoNumPisosProp" placeholder="Número de Pisos" required min="1"><br><br>
             <label><b>Estacionamiento</b></label>
             <div>
-              <input type="radio" id="nuevoEstSi" name="nuevoEstacionamiento" value="Sí">
+              <input type="radio" id="nuevoEstSi" name="nuevoEstacionamiento" value="Sí" required>
               <label for="nuevoEstSi">Sí</label>
               
-              <input type="radio" id="nuevoEstNo" name="nuevoEstacionamiento" value="No">
+              <input type="radio" id="nuevoEstNo" name="nuevoEstacionamiento" value="No" required>
               <label for="nuevoEstNo">No</label>
             </div>
             <br>
             <label><b>Foto</b></label><br>
             <input type="file" id="nuevaFotoProp">
 
-            <button onclick="editarPropiedad()">Guardar Cambios</button>
-            <button onclick="ocultarFormulario()">Cancelar</button>
+            <button type="submit">Guardar Cambios</button>
+            <button type="button" onclick="ocultarFormulario()">Cancelar</button>
+            </form>
           `;
+
+          document.getElementById("editarPropiedadForm").addEventListener("submit", function(event) {
+              event.preventDefault(); 
+              
+              if (validarFormulario()) {
+                  editarPropiedad(); 
+              }
+          });
         } 
 
         else if (accion === 'eliminarProp') {
@@ -190,13 +210,18 @@
     }
 
   }
+
+  function validarFormulario() {
+    let serviciosSeleccionados = document.querySelectorAll('input[type="checkbox"]:checked').length;
+    
+    if (serviciosSeleccionados === 0) {
+        alert("Debe seleccionar al menos un servicio.");
+        return false;
+    }
+
+    return true;
+}
   
-
-  
-
-
-
-
   function ocultarFormulario() {
     document.getElementById("formulario").style.display = "none";
   }

@@ -1,66 +1,104 @@
+// Obtener los departamentos disponibles para invitar inquilinos
 function getDepartamentosParaInvitaciones() {
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Departamentos');
-  if (!sheet) return [];
+  var sheetDep = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Departamentos');
+  if (!sheetDep) return [];
 
-  var data = sheet.getDataRange().getValues();
+  var data = sheetDep.getDataRange().getValues();
   var departamentos = [];
 
   for (var i = 1; i < data.length; i++) {
-    var estado = data[i][6].toString().trim().toLowerCase(); // Normaliza el estado
-    if (estado === "desocupado") {
+    if (data[i][6].toString().trim().toLowerCase() === "desocupado") { // Estado en columna G
       departamentos.push({
-        id: data[i][4], // ID Departamento
-        nombre: data[i][1], // Nombre del Departamento
+        id: data[i][4], // ID Departamento (columna E)
+        nombre: data[i][1] // Nombre del Departamento (columna B)
       });
     }
   }
+
   return departamentos;
 }
 
+// Obtener todas las invitaciones registradas en la hoja
 function obtenerInvitaciones() {
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Invitaciones');
-  if (!sheet) return [];
+  var sheetInv = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Invitaciones');
+  if (!sheetInv) return [];
 
-  var data = sheet.getDataRange().getValues();
+  var data = sheetInv.getDataRange().getValues();
   var invitaciones = [];
 
   for (var i = 1; i < data.length; i++) {
     invitaciones.push({
-      id: data[i][0],
-      departamento: data[i][1],
-      inquilino: data[i][3],
-      estado: data[i][4],
+      id: data[i][0], // ID Invitación
+      departamento: data[i][1], // ID Departamento
+      propietario: data[i][2], // Correo del propietario
+      inquilino: data[i][3], // Correo del inquilino
+      estado: data[i][4], // Estado de la invitación
+      fechaEnvio: data[i][5] // Fecha de envío
     });
   }
+
   return invitaciones;
 }
 
 function enviarInvitacion(idDepartamento, emailInquilino) {
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Invitaciones');
-  if (!sheet) {
-    sheet = SpreadsheetApp.getActiveSpreadsheet().insertSheet('Invitaciones');
-    sheet.appendRow(['ID', 'ID Departamento', 'ID Arrendador', 'ID Arrendatario', 'Estado', 'Fecha Envío', 'Fecha Respuesta']);
+  var sheetInv = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Invitaciones');
+  var sheetDep = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Departamentos');
+  var sheetInq = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Inquilinos');
+
+  if (!sheetInv || !sheetDep || !sheetInq) return 'Error: No se encontraron las hojas necesarias.';
+
+  // **Paso 1: Obtener la lista de correos de los inquilinos**
+  var dataInq = sheetInq.getDataRange().getValues();
+  var listaCorreos = dataInq.slice(1).map(row => row[1].trim().toLowerCase()); // Columna B (Correos)
+
+  // **Paso 2: Validar si el correo ingresado está en la lista**
+  if (!listaCorreos.includes(emailInquilino.trim().toLowerCase())) {
+    return `Error: El correo ${emailInquilino} no está registrado como inquilino.`;
   }
 
-  var invitaciones = sheet.getDataRange().getValues();
-  for (var i = 1; i < invitaciones.length; i++) {
-    if (invitaciones[i][1] == idDepartamento && invitaciones[i][4] == 'Pendiente') {
-      return 'Ya existe una invitación pendiente para este departamento';
+  // **Paso 3: Verificar si el departamento sigue desocupado**
+  var dataDep = sheetDep.getDataRange().getValues();
+  var departamentoNombre = '';
+  var departamentoEstado = '';
+
+  for (var i = 1; i < dataDep.length; i++) {
+    if (dataDep[i][4] == idDepartamento) { // ID Departamento en columna E
+      departamentoNombre = dataDep[i][1]; // Nombre en columna B
+      departamentoEstado = dataDep[i][6]; // Estado en columna G
+      break;
     }
   }
 
-  var fechaEnvio = new Date();
-  var nuevaFila = sheet.getLastRow() + 1;
-  sheet.appendRow([nuevaFila, idDepartamento, Session.getActiveUser().getEmail(), emailInquilino, 'Pendiente', fechaEnvio, '']);
+  if (departamentoEstado.toLowerCase() !== "desocupado") {
+    return 'Error: Este departamento ya no está disponible.';
+  }
 
+  // **Paso 4: Verificar si ya hay una invitación pendiente para este departamento**
+  var dataInv = sheetInv.getDataRange().getValues();
+  for (var i = 1; i < dataInv.length; i++) {
+    if (dataInv[i][1] == idDepartamento && dataInv[i][4] == 'Pendiente') {
+      return 'Ya existe una invitación pendiente para este departamento.';
+    }
+  }
+
+  // **Paso 5: Generar ID único basado en timestamp y número aleatorio**
+  var timestamp = new Date().getTime();
+  var randomNum = Math.floor(1000000 + Math.random() * 9000000);
+  var idInvitacion = timestamp.toString() + "-" + randomNum.toString();
+
+  // **Paso 6: Registrar la invitación en la hoja**
+  var fechaEnvio = new Date();
+  sheetInv.appendRow([idInvitacion, idDepartamento, Session.getActiveUser().getEmail(), emailInquilino, 'Pendiente', fechaEnvio, '']);
+
+  // **Paso 7: Enviar correo al inquilino**
   var scriptUrl = ScriptApp.getService().getUrl();
-  var aceptarUrl = scriptUrl + "?accion=aceptar&id=" + nuevaFila;
-  var rechazarUrl = scriptUrl + "?accion=rechazar&id=" + nuevaFila;
+  var aceptarUrl = scriptUrl + "?accion=aceptar&id=" + idInvitacion;
+  var rechazarUrl = scriptUrl + "?accion=rechazar&id=" + idInvitacion;
 
   var mensajeHtml = `
     <h2>Invitación para Departamento</h2>
-    <p>Has recibido una invitación para formar parte del departamento ID: ${idDepartamento}.</p>
-    <p>Puedes aceptarla o rechazarla utilizando los siguientes botones:</p>
+    <p>Has recibido una invitación para formar parte del departamento <b>${departamentoNombre}</b>.</p>
+    <p>Puedes aceptar o rechazar la invitación utilizando los siguientes enlaces:</p>
     <a href="${aceptarUrl}" style="display:inline-block;padding:10px;background-color:green;color:white;text-decoration:none;margin-right:10px;">Aceptar</a>
     <a href="${rechazarUrl}" style="display:inline-block;padding:10px;background-color:red;color:white;text-decoration:none;">Rechazar</a>
   `;
@@ -71,55 +109,63 @@ function enviarInvitacion(idDepartamento, emailInquilino) {
     htmlBody: mensajeHtml
   });
 
-  return 'Invitación enviada con éxito';
+  return 'Invitación enviada con éxito.';
 }
 
+// Manejar la respuesta de la invitación (aceptar o rechazar)
 function doGet(e) {
-  if (!e.parameter.accion) {
-    return HtmlService.createTemplateFromFile('main').evaluate()
-      .setTitle("Rendo - Gestión de Arrendamientos");
+  var template = HtmlService.createTemplateFromFile('main');
+
+  // Si no hay parámetros, renderiza la página principal
+  if (!e.parameter.accion || !e.parameter.id) {
+    return template.evaluate().setTitle("Gestión de Invitaciones");
   }
 
   var accion = e.parameter.accion;
   var idInvitacion = e.parameter.id;
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Invitaciones');
-  if (!sheet) return ContentService.createTextOutput("No hay hoja de invitaciones creada");
+  var sheetInv = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Invitaciones');
+  var sheetDep = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Departamentos');
 
-  var data = sheet.getDataRange().getValues();
-  for (var i = 1; i < data.length; i++) {
-    if (data[i][0] == idInvitacion && data[i][4] == 'Pendiente') {
+  if (!sheetInv || !sheetDep) {
+    return ContentService.createTextOutput("No se encontraron las hojas necesarias.");
+  }
+
+  var dataInv = sheetInv.getDataRange().getValues();
+  for (var i = 1; i < dataInv.length; i++) {
+    if (dataInv[i][0] == idInvitacion && dataInv[i][4] == 'Pendiente') {
       var fechaRespuesta = new Date();
-      sheet.getRange(i + 1, 5).setValue(accion.charAt(0).toUpperCase() + accion.slice(1));
-      sheet.getRange(i + 1, 7).setValue(fechaRespuesta);
+      sheetInv.getRange(i + 1, 5).setValue(accion.charAt(0).toUpperCase() + accion.slice(1));
+      sheetInv.getRange(i + 1, 6).setValue(fechaRespuesta);
 
       if (accion == 'aceptar') {
-        var sheetDepa = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Departamentos');
-        var departamentos = sheetDepa.getDataRange().getValues();
-        for (var j = 1; j < departamentos.length; j++) {
-          if (departamentos[j][0] == data[i][1]) {
-            sheetDepa.getRange(j + 1, 5).setValue('Ocupado'); // Se asegura de actualizar el estado correctamente
+        var dataDep = sheetDep.getDataRange().getValues();
+        for (var j = 1; j < dataDep.length; j++) {
+          if (dataDep[j][4] == dataInv[i][1]) {
+            sheetDep.getRange(j + 1, 6).setValue('Ocupado');
             break;
           }
         }
-        return ContentService.createTextOutput("Has aceptado la invitación. El departamento ha sido asignado.");
+        return ContentService.createTextOutput("Has aceptado la invitación.");
       } else {
         return ContentService.createTextOutput("Has rechazado la invitación.");
       }
     }
   }
+
   return ContentService.createTextOutput("Invitación no encontrada o ya gestionada.");
 }
 
+// Cancelar una invitación si está en estado pendiente
 function cancelarInvitacion(idInvitacion) {
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Invitaciones');
-  if (!sheet) return 'No hay hoja de invitaciones creada';
+  var sheetInv = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Invitaciones');
+  if (!sheetInv) return 'Error: No se encontró la hoja de invitaciones.';
 
-  var data = sheet.getDataRange().getValues();
+  var data = sheetInv.getDataRange().getValues();
   for (var i = 1; i < data.length; i++) {
     if (data[i][0] == idInvitacion && data[i][4] == 'Pendiente') {
-      sheet.getRange(i + 1, 5).setValue('Cancelada');
-      return 'Invitación cancelada con éxito';
+      sheetInv.getRange(i + 1, 5).setValue('Cancelada');
+      return 'Invitación cancelada con éxito.';
     }
   }
-  return 'No se encontró una invitación pendiente con ese ID';
+  return 'No se encontró una invitación pendiente con ese ID.';
 }

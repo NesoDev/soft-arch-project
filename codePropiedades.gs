@@ -167,3 +167,6 @@ function getPropiedadPorId(propiedadId) {
 }
 
 
+
+
+

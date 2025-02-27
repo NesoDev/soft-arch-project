@@ -1,62 +1,17 @@
 <div>
   <h2>Gestión de Invitaciones</h2>
 
-  <!-- Enviar invitación -->
-  <h3>Enviar Invitación</h3>
-  <label for="departamentoSeleccionado">Seleccionar Departamento:</label>
-  <select id="departamentoSeleccionado" onchange="validarEnvio()">
-    <option value="">Cargando departamentos...</option>
-  </select>
-  <br><br>
+  <!-- Botones CRUD -->
+  <button onclick="mostrarFormularioInvitacion('enviarInv')">📩 Enviar Invitación</button>
+  <button onclick="mostrarFormularioInvitacion('cancelarInv')">❌ Cancelar Invitación</button>
+  <button onclick="cargarInvitaciones()">🔄 Actualizar Listado</button>
 
-  <label for="emailInquilino">Correo del Inquilino:</label>
-  <input type="email" id="emailInquilino" placeholder="ejemplo@gmail.com" oninput="validarEnvio()">
-  <br><br>
+  <!-- Contenedor para formularios -->
+  <div id="formularioInvitacion" style="display:none;"></div>
 
-  <button id="btnEnviarInvitacion" onclick="enviarInvitacion()" disabled>📩 Enviar Invitación</button>
+  <!-- Lista de invitaciones -->
+  <h3>Mis Invitaciones</h3>
+  <ul id="listaInvitaciones"></ul>
 
-  <hr>
-
-  <!-- Listar invitaciones enviadas -->
-  <h3>Invitaciones Enviadas</h3>
-  <table border="1">
-    <thead>
-      <tr>
-        <th>ID</th>
-        <th>Departamento</th>
-        <th>Inquilino</th>
-        <th>Estado</th>
-      </tr>
-    </thead>
-    <tbody id="tablaInvitaciones">
-      <tr><td colspan="4">Cargando invitaciones...</td></tr>
-    </tbody>
-  </table>
-
-  <hr>
-
-  <!-- Cancelar invitaciones pendientes -->
-  <h3>Cancelar Invitación</h3>
-  <label for="invitacionesPendientes">Seleccionar Invitación:</label>
-  <select id="invitacionesPendientes" onchange="validarCancelacion()">
-    <option value="">Cargando invitaciones...</option>
-  </select>
-  <br><br>
-
-  <button id="btnCancelarInvitacion" onclick="cancelarInvitacion()" disabled>❌ Cancelar Invitación</button>
-
-  <button onclick="volverAlMenu()">🔙 Volver al Menú Principal</button>
+  <button onclick="volverAlMenu()">Volver al Menú Principal</button>
 </div>
-
-<script>
-  function validarEnvio() {
-    var idDepartamento = document.getElementById("departamentoSeleccionado").value;
-    var emailInquilino = document.getElementById("emailInquilino").value.trim();
-    document.getElementById("btnEnviarInvitacion").disabled = !idDepartamento || !emailInquilino;
-  }
-
-  function validarCancelacion() {
-    var idInvitacion = document.getElementById("invitacionesPendientes").value;
-    document.getElementById("btnCancelarInvitacion").disabled = !idInvitacion;
-  }
-</script>

@@ -1,109 +1,89 @@
 <script>
-  function cargarDepartamentosDisponibles() {
+  function cargarDepartamentosParaInvitaciones() {
     google.script.run.withSuccessHandler(function(departamentos) {
       var select = document.getElementById("departamentoSeleccionado");
       select.innerHTML = "<option value=''>Seleccione un departamento</option>";
-
-      if (departamentos.length === 0) {
-        select.innerHTML = "<option value=''>No hay departamentos disponibles</option>";
-        return;
-      }
-
+      
       departamentos.forEach(function(depto) {
-        select.innerHTML += `<option value="${depto.id}">${depto.nombre}</option>`;
+        var option = document.createElement("option");
+        option.value = depto.id;
+        option.textContent = depto.nombre;
+        select.appendChild(option);
       });
-    }).withFailureHandler(function(error) {
-      console.error("Error al cargar departamentos:", error);
-      alert("❌ Error al cargar los departamentos. Intente nuevamente.");
-    }).getDepartamentos();
+    }).getDepartamentosParaInvitaciones();
+  }
+
+  function mostrarFormularioInvitacion(accion) {
+    var form = document.getElementById("formularioInvitacion");
+    form.style.display = "block";
+    
+    if (accion === 'enviarInv') {
+      form.innerHTML = `
+        <h3>📩 Enviar Invitación</h3>
+        <label>Correo del Inquilino:</label> <input type="email" id="emailInquilino" placeholder="Ingrese correo"><br><br>
+        <label>Seleccione un Departamento:</label> <select id="departamentoSeleccionado"></select><br><br>
+        <button onclick="enviarInvitacion()">Enviar</button>
+        <button onclick="ocultarFormularioInvitacion()">Cancelar</button>
+      `;
+      cargarDepartamentosParaInvitaciones();
+    } else if (accion === 'cancelarInv') {
+      form.innerHTML = "<h3>❌ Seleccione una invitación para cancelar</h3>";
+    }
+  }
+
+  function ocultarFormularioInvitacion() {
+    document.getElementById("formularioInvitacion").style.display = "none";
   }
 
   function enviarInvitacion() {
-    var idDepartamento = document.getElementById("departamentoSeleccionado").value;
     var emailInquilino = document.getElementById("emailInquilino").value.trim();
-
-    if (!idDepartamento || !emailInquilino) {
-      alert("⚠️ Seleccione un departamento y escriba un correo válido.");
+    var idDepartamento = document.getElementById("departamentoSeleccionado").value;
+    
+    if (!emailInquilino || !idDepartamento) {
+      alert("⚠️ Debe ingresar un correo de inquilino y seleccionar un departamento.");
       return;
     }
-
-    google.script.run.withSuccessHandler(function(mensaje) {
-      alert(mensaje);
+    
+    google.script.run.withSuccessHandler(function(msg) {
+      alert(msg);
       cargarInvitaciones();
-      cargarInvitacionesPendientes();
-    }).withFailureHandler(function(error) {
-      console.error("Error al enviar la invitación:", error);
-      alert("❌ Error al enviar la invitación. Intente nuevamente.");
     }).enviarInvitacion(idDepartamento, emailInquilino);
   }
 
   function cargarInvitaciones() {
     google.script.run.withSuccessHandler(function(invitaciones) {
-      var tabla = document.getElementById("tablaInvitaciones");
-      tabla.innerHTML = "<tr><th>ID</th><th>Departamento</th><th>Inquilino</th><th>Estado</th></tr>";
-
+      var lista = document.getElementById("listaInvitaciones");
+      lista.innerHTML = "";
+      
       if (invitaciones.length === 0) {
-        tabla.innerHTML += `<tr><td colspan="4">No hay invitaciones enviadas.</td></tr>`;
-        return;
+        lista.innerHTML = "<li>No hay invitaciones registradas.</li>";
+      } else {
+        invitaciones.forEach(function(inv) {
+          var li = document.createElement("li");
+          li.innerHTML = `ID: ${inv.id} - Departamento: ${inv.departamento} - Estado: ${inv.estado}`;
+          
+          if (inv.estado === "Pendiente") {
+            var btnCancelar = document.createElement("button");
+            btnCancelar.textContent = "Cancelar";
+            btnCancelar.onclick = function() { cancelarInvitacion(inv.id); };
+            li.appendChild(btnCancelar);
+          }
+          
+          lista.appendChild(li);
+        });
       }
-
-      invitaciones.forEach(function(inv) {
-        var fila = `<tr>
-                      <td>${inv.id}</td>
-                      <td>${inv.departamento}</td>
-                      <td>${inv.inquilino}</td>
-                      <td>${inv.estado}</td>
-                    </tr>`;
-        tabla.innerHTML += fila;
-      });
-    }).withFailureHandler(function(error) {
-      console.error("Error al cargar invitaciones:", error);
-      alert("❌ Error al cargar las invitaciones. Intente nuevamente.");
     }).obtenerInvitaciones();
   }
 
-  function cargarInvitacionesPendientes() {
-    google.script.run.withSuccessHandler(function(invitaciones) {
-      var select = document.getElementById("invitacionesPendientes");
-      select.innerHTML = "<option value=''>Seleccione una invitación</option>";
-
-      var pendientes = invitaciones.filter(inv => inv.estado.trim().toLowerCase() === "pendiente");
-
-      if (pendientes.length === 0) {
-        select.innerHTML = "<option value=''>No hay invitaciones pendientes</option>";
-        return;
-      }
-
-      pendientes.forEach(function(inv) {
-        select.innerHTML += `<option value="${inv.id}">ID ${inv.id} - ${inv.inquilino}</option>`;
-      });
-    }).withFailureHandler(function(error) {
-      console.error("Error al cargar invitaciones pendientes:", error);
-      alert("❌ Error al cargar las invitaciones pendientes. Intente nuevamente.");
-    }).obtenerInvitaciones();
-  }
-
-  function cancelarInvitacion() {
-    var idInvitacion = document.getElementById("invitacionesPendientes").value;
-
-    if (!idInvitacion) {
-      alert("⚠️ Seleccione una invitación para cancelar.");
-      return;
-    }
-
-    google.script.run.withSuccessHandler(function(mensaje) {
-      alert(mensaje);
+  function cancelarInvitacion(idInvitacion) {
+    google.script.run.withSuccessHandler(function(msg) {
+      alert(msg);
       cargarInvitaciones();
-      cargarInvitacionesPendientes();
-    }).withFailureHandler(function(error) {
-      console.error("Error al cancelar la invitación:", error);
-      alert("❌ Error al cancelar la invitación. Intente nuevamente.");
     }).cancelarInvitacion(idInvitacion);
   }
 
   window.onload = function() {
-    cargarDepartamentosDisponibles();
+    cargarDepartamentosParaInvitaciones();
     cargarInvitaciones();
-    cargarInvitacionesPendientes();
   };
 </script>
