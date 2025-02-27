@@ -1,3 +1,5 @@
+
+
 <script>
   function cargarPropiedades() {
     google.script.run.withFailureHandler(function(error) {
@@ -101,7 +103,7 @@
     } 
     else if (accion === 'editarProp' || accion === 'eliminarProp') {
       google.script.run.withSuccessHandler(function(propiedades) {
-        var opciones = `<select id="propiedadSeleccionada">
+        var opciones = `<select id="propiedadSeleccionada" onchange="cargarDatosPropiedad()">
                           <option value="">Seleccione una propiedad</option>`;
         propiedades.forEach(function(propiedad) {
           opciones += `<option value="${propiedad.id}">${propiedad.id} - ${propiedad.nombre}</option>`;
@@ -112,12 +114,38 @@
           form.innerHTML = `
             <h3>✏️ Editar Propiedad</h3>
             ${opciones}
-            <input type="text" id="nuevoNombre" placeholder="Nuevo Nombre">
-            <input type="text" id="nuevaDireccion" placeholder="Nueva Dirección">
+            <br><br>
+            <input type="text" id="nuevoNombre" placeholder="Nuevo Nombre"><br><br>
+            <input type="text" id="nuevaDireccion" placeholder="Nueva Dirección"><br><br>
+            <input type="text" id="nuevaReferencia" placeholder="Nueva Referencia"><br><br>
+            <input type="number" id="nuevaCantidadDeptos" placeholder="Cantidad de Departamentos"><br><br>
+            <input type="number" id="nuevaAreaProp" placeholder="Área en m²"><br><br>
+            <label><b>Servicios</b></label><br>
+            <div>
+              <input type="checkbox" id="nuevoServicioLuz" value="Luz">
+              <label for="nuevoServicioLuz">Luz</label>
+              
+              <input type="checkbox" id="nuevoServicioAgua" value="Agua">
+              <label for="nuevoServicioAgua">Agua</label>
+            </div><br>
+            <input type="number" id="nuevoNumPisosProp" placeholder="Número de Pisos"><br><br>
+            <label><b>Estacionamiento</b></label>
+            <div>
+              <input type="radio" id="nuevoEstSi" name="nuevoEstacionamiento" value="Sí">
+              <label for="nuevoEstSi">Sí</label>
+              
+              <input type="radio" id="nuevoEstNo" name="nuevoEstacionamiento" value="No">
+              <label for="nuevoEstNo">No</label>
+            </div>
+            <br>
+            <label><b>Foto</b></label><br>
+            <input type="file" id="nuevaFotoProp">
+
             <button onclick="editarPropiedad()">Guardar Cambios</button>
             <button onclick="ocultarFormulario()">Cancelar</button>
           `;
         } 
+
         else if (accion === 'eliminarProp') {
           form.innerHTML = `
             <h3>❌ Eliminar Propiedad</h3>
@@ -129,6 +157,40 @@
       }).getPropiedades();
     }
   }
+
+
+  function cargarDatosPropiedad() {
+    var propiedadId = document.getElementById("propiedadSeleccionada").value;
+    
+    if (propiedadId) {
+        google.script.run.withSuccessHandler(function(propiedad) {
+            document.getElementById("nuevoNombre").value = propiedad.nombre || "";
+            document.getElementById("nuevaDireccion").value = propiedad.direccion || "";
+            document.getElementById("nuevaReferencia").value = propiedad.referencia || "";
+            document.getElementById("nuevaCantidadDeptos").value = propiedad.cantidadDeptos || "";
+            document.getElementById("nuevaAreaProp").value = propiedad.area || "";
+            document.getElementById("nuevoNumPisosProp").value = propiedad.numPisos || "";
+
+            
+            document.getElementById("nuevoServicioLuz").checked = propiedad.servicios.includes("Luz");
+            document.getElementById("nuevoServicioAgua").checked = propiedad.servicios.includes("Agua");
+
+            
+            if (propiedad.estacionamiento === "Sí") {
+                document.getElementById("nuevoEstSi").checked = true;
+            } else {
+                document.getElementById("nuevoEstNo").checked = true;
+            }
+        }).getPropiedadPorId(propiedadId);
+    }
+
+  }
+  
+
+  
+
+
+
 
   function ocultarFormulario() {
     document.getElementById("formulario").style.display = "none";
@@ -193,19 +255,63 @@
     var id = propiedadSelect.value.trim();
     var nuevoNombre = document.getElementById("nuevoNombre").value.trim();
     var nuevaDireccion = document.getElementById("nuevaDireccion").value.trim();
+    var nuevaReferencia = document.getElementById("nuevaReferencia").value.trim();
+    var nuevaCantidadDeptos = document.getElementById("nuevaCantidadDeptos").value.trim();
+    var nuevaAreaProp = document.getElementById("nuevaAreaProp").value.trim();
+    var nuevoNumPisosProp = document.getElementById("nuevoNumPisosProp").value.trim();
+    
+
+    
+    var nuevoServicioLuz = document.getElementById("nuevoServicioLuz").checked ? "Luz" : "";
+    var nuevoServicioAgua = document.getElementById("nuevoServicioAgua").checked ? "Agua" : "";
+    var nuevosServicios = [nuevoServicioLuz, nuevoServicioAgua].filter(Boolean).join(", ");
+
+    
+    var nuevoEstacionamiento = document.querySelector('input[name="nuevoEstacionamiento"]:checked');
+    nuevoEstacionamiento = nuevoEstacionamiento ? nuevoEstacionamiento.value : "";
+
+    var nuevaFotoInput = document.getElementById("nuevaFotoProp");
+    var nuevaFotoProp = nuevaFotoInput.files.length > 0 ? nuevaFotoInput.files[0] : null;
+
 
     if (!id) {
         alert("Por favor, selecciona una propiedad.");
         return;
     }
 
-    google.script.run.withFailureHandler(function(error) {
+    if (nuevaFotoProp) {
+        var reader = new FileReader();
+        reader.readAsDataURL(nuevaFotoProp);
+        reader.onload = function () {
+            var nuevaFotoBase64 = reader.result.split(',')[1]; 
+            
+            
+            google.script.run.withFailureHandler(function(error) {
+                alert("❌ Error al editar propiedad: " + error.message);
+            }).withSuccessHandler(function(msg) {
+                alert(msg);
+                ocultarFormulario();
+                cargarPropiedades();
+            }).editPropiedad(id, nuevoNombre, nuevaDireccion, nuevaReferencia, nuevaCantidadDeptos, nuevaAreaProp, nuevosServicios, nuevoNumPisosProp, nuevoEstacionamiento, nuevaFotoBase64);
+        };
+    } else {
+        google.script.run.withFailureHandler(function(error) {
+            alert("❌ Error al editar propiedad: " + error.message);
+        }).withSuccessHandler(function(msg) {
+            alert(msg);
+            ocultarFormulario();
+            cargarPropiedades();
+        }).editPropiedad(id, nuevoNombre, nuevaDireccion, nuevaReferencia, nuevaCantidadDeptos, nuevaAreaProp, nuevosServicios, nuevoNumPisosProp, nuevoEstacionamiento, null);
+    }
+
+
+    /*google.script.run.withFailureHandler(function(error) {
         alert("❌ Error al editar propiedad: " + error.message);
     }).withSuccessHandler(function(msg) {
         alert(msg);
         ocultarFormulario();
         cargarPropiedades();
-    }).editPropiedad(id, nuevoNombre, nuevaDireccion); // No usar parseInt(id)
+    }).editPropiedad(id, nuevoNombre, nuevaDireccion, nuevaReferencia, nuevaCantidadDeptos, nuevaAreaProp, nuevosServicios, nuevoNumPisosProp, nuevoEstacionamiento, nuevaFotoProp);*/
   }
 
   function eliminarPropiedad() {

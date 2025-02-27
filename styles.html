@@ -40,8 +40,89 @@ th, td {
 }
 
 th {
-    background-color: #f4f4f4;
+    background-color: #90EE90;;
     font-weight: bold;
 }
+
+
+#formulario {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  max-width: 400px;
+  background: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  font-family: Arial, sans-serif;
+}
+
+
+#formulario h3 {
+  text-align: center;
+  color: #333;
+  margin-bottom: 15px;
+}
+
+
+#formulario input[type="text"],
+#formulario input[type="number"],
+#formulario input[type="file"],
+#formulario select {
+  width: 100%;
+  padding: 10px;
+  margin: 8px 0;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 16px;
+  transition: border-color 0.3s ease-in-out;
+}
+
+#formulario input[type="text"]:focus,
+#formulario input[type="number"]:focus,
+#formulario select:focus {
+  border-color: #007BFF;
+  outline: none;
+}
+
+
+#formulario input[type="checkbox"],
+#formulario input[type="radio"] {
+  margin-right: 5px;
+  transform: scale(1.2);
+}
+
+
+#formulario label {
+  font-size: 16px;
+  color: #333;
+  cursor: pointer;
+}
+
+
+#formulario button {
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
+  background: #007BFF;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background 0.3s ease-in-out;
+}
+
+#formulario button:hover {
+  background: #0056b3;
+}
+
+
+#formulario div {
+  margin: 10px 0;
+}
+
+
 
 </style>
