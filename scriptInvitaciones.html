@@ -1,1 +1,109 @@
-<script></script>
+<script>
+  function cargarDepartamentosDisponibles() {
+    google.script.run.withSuccessHandler(function(departamentos) {
+      var select = document.getElementById("departamentoSeleccionado");
+      select.innerHTML = "<option value=''>Seleccione un departamento</option>";
+
+      if (departamentos.length === 0) {
+        select.innerHTML = "<option value=''>No hay departamentos disponibles</option>";
+        return;
+      }
+
+      departamentos.forEach(function(depto) {
+        select.innerHTML += `<option value="${depto.id}">${depto.nombre}</option>`;
+      });
+    }).withFailureHandler(function(error) {
+      console.error("Error al cargar departamentos:", error);
+      alert("❌ Error al cargar los departamentos. Intente nuevamente.");
+    }).getDepartamentos();
+  }
+
+  function enviarInvitacion() {
+    var idDepartamento = document.getElementById("departamentoSeleccionado").value;
+    var emailInquilino = document.getElementById("emailInquilino").value.trim();
+
+    if (!idDepartamento || !emailInquilino) {
+      alert("⚠️ Seleccione un departamento y escriba un correo válido.");
+      return;
+    }
+
+    google.script.run.withSuccessHandler(function(mensaje) {
+      alert(mensaje);
+      cargarInvitaciones();
+      cargarInvitacionesPendientes();
+    }).withFailureHandler(function(error) {
+      console.error("Error al enviar la invitación:", error);
+      alert("❌ Error al enviar la invitación. Intente nuevamente.");
+    }).enviarInvitacion(idDepartamento, emailInquilino);
+  }
+
+  function cargarInvitaciones() {
+    google.script.run.withSuccessHandler(function(invitaciones) {
+      var tabla = document.getElementById("tablaInvitaciones");
+      tabla.innerHTML = "<tr><th>ID</th><th>Departamento</th><th>Inquilino</th><th>Estado</th></tr>";
+
+      if (invitaciones.length === 0) {
+        tabla.innerHTML += `<tr><td colspan="4">No hay invitaciones enviadas.</td></tr>`;
+        return;
+      }
+
+      invitaciones.forEach(function(inv) {
+        var fila = `<tr>
+                      <td>${inv.id}</td>
+                      <td>${inv.departamento}</td>
+                      <td>${inv.inquilino}</td>
+                      <td>${inv.estado}</td>
+                    </tr>`;
+        tabla.innerHTML += fila;
+      });
+    }).withFailureHandler(function(error) {
+      console.error("Error al cargar invitaciones:", error);
+      alert("❌ Error al cargar las invitaciones. Intente nuevamente.");
+    }).obtenerInvitaciones();
+  }
+
+  function cargarInvitacionesPendientes() {
+    google.script.run.withSuccessHandler(function(invitaciones) {
+      var select = document.getElementById("invitacionesPendientes");
+      select.innerHTML = "<option value=''>Seleccione una invitación</option>";
+
+      var pendientes = invitaciones.filter(inv => inv.estado.trim().toLowerCase() === "pendiente");
+
+      if (pendientes.length === 0) {
+        select.innerHTML = "<option value=''>No hay invitaciones pendientes</option>";
+        return;
+      }
+
+      pendientes.forEach(function(inv) {
+        select.innerHTML += `<option value="${inv.id}">ID ${inv.id} - ${inv.inquilino}</option>`;
+      });
+    }).withFailureHandler(function(error) {
+      console.error("Error al cargar invitaciones pendientes:", error);
+      alert("❌ Error al cargar las invitaciones pendientes. Intente nuevamente.");
+    }).obtenerInvitaciones();
+  }
+
+  function cancelarInvitacion() {
+    var idInvitacion = document.getElementById("invitacionesPendientes").value;
+
+    if (!idInvitacion) {
+      alert("⚠️ Seleccione una invitación para cancelar.");
+      return;
+    }
+
+    google.script.run.withSuccessHandler(function(mensaje) {
+      alert(mensaje);
+      cargarInvitaciones();
+      cargarInvitacionesPendientes();
+    }).withFailureHandler(function(error) {
+      console.error("Error al cancelar la invitación:", error);
+      alert("❌ Error al cancelar la invitación. Intente nuevamente.");
+    }).cancelarInvitacion(idInvitacion);
+  }
+
+  window.onload = function() {
+    cargarDepartamentosDisponibles();
+    cargarInvitaciones();
+    cargarInvitacionesPendientes();
+  };
+</script>
