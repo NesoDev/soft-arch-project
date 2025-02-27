@@ -98,19 +98,19 @@
           <label><b>Foto</b></label><br>
           <input type="file" id="fotoProp" required>
           <button type="submit">Guardar</button>
-          <button onclick="ocultarFormulario()">Cancelar</button>
+          <button type="button" onclick="ocultarFormulario()">Cancelar</button>
         </form>
       `;
 
         document.getElementById("crearPropiedadForm").addEventListener("submit", function(event) {
-              if (!validarFormulario()) {
-                  event.preventDefault(); 
-              } else {
-                  crearPropiedad(); 
-              }
-          });
+            event.preventDefault(); 
+            
+            if (validarFormulario()) {
+                crearPropiedad(); 
+            }
+        });
       }
-    } 
+   
     else if (accion === 'editarProp' || accion === 'eliminarProp') {
       google.script.run.withSuccessHandler(function(propiedades) {
         var opciones = `<select id="propiedadSeleccionada" onchange="cargarDatosPropiedad()">
@@ -125,6 +125,7 @@
             <h3>✏️ Editar Propiedad</h3>
             ${opciones}
             <br><br>
+            <form id="editarPropiedadForm">
             <label><b>Nombre:</b></label><br>
             <input type="text" id="nuevoNombre" placeholder="Nuevo Nombre" required><br><br>
             <label><b>Dirección::</b></label><br>
@@ -156,9 +157,18 @@
             <label><b>Foto</b></label><br>
             <input type="file" id="nuevaFotoProp">
 
-            <button onclick="editarPropiedad()">Guardar Cambios</button>
-            <button onclick="ocultarFormulario()">Cancelar</button>
+            <button type="submit">Guardar Cambios</button>
+            <button type="button" onclick="ocultarFormulario()">Cancelar</button>
+            </form>
           `;
+
+          document.getElementById("editarPropiedadForm").addEventListener("submit", function(event) {
+              event.preventDefault(); 
+              
+              if (validarFormulario()) {
+                  editarPropiedad(); 
+              }
+          });
         } 
 
         else if (accion === 'eliminarProp') {
@@ -200,6 +210,17 @@
     }
 
   }
+
+  function validarFormulario() {
+    let serviciosSeleccionados = document.querySelectorAll('input[type="checkbox"]:checked').length;
+    
+    if (serviciosSeleccionados === 0) {
+        alert("Debe seleccionar al menos un servicio.");
+        return false;
+    }
+
+    return true;
+}
   
   function ocultarFormulario() {
     document.getElementById("formulario").style.display = "none";

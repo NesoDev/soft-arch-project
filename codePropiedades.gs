@@ -166,16 +166,3 @@ function getPropiedadPorId(propiedadId) {
   return null; 
 }
 
-
-function validarFormulario() {
-    let serviciosSeleccionados = document.querySelectorAll('input[type="checkbox"]:checked').length;
-    
-    if (serviciosSeleccionados === 0) {
-        alert("Debe seleccionar al menos un servicio.");
-        return false;
-    }
-
-    return true;
-}
-
-

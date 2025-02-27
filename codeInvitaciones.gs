@@ -136,7 +136,6 @@ function enviarInvitacion(idDepartamento, emailInquilino) {
   return 'Invitación enviada con éxito.';
 }
 
-// Manejar la respuesta de la invitación (aceptar o rechazar)
 function doGet(e) {
   var template = HtmlService.createTemplateFromFile('main');
 
@@ -158,14 +157,21 @@ function doGet(e) {
   for (var i = 1; i < dataInv.length; i++) {
     if (dataInv[i][0] == idInvitacion && dataInv[i][4] == 'Pendiente') {
       var fechaRespuesta = new Date();
-      sheetInv.getRange(i + 1, 5).setValue(accion.charAt(0).toUpperCase() + accion.slice(1));
-      sheetInv.getRange(i + 1, 6).setValue(fechaRespuesta);
+      
+      // Actualizar estado y fecha en "Invitaciones"
+      sheetInv.getRange(i + 1, 5).setValue(accion.charAt(0).toUpperCase() + accion.slice(1)); // Estado
+      sheetInv.getRange(i + 1, 7).setValue(fechaRespuesta); // Fecha Respuesta (Columna G = 7)
 
       if (accion == 'aceptar') {
+        var idDepartamento = dataInv[i][1];  // ID Departamento (Columna B)
+        var correoInquilino = dataInv[i][3]; // Correo del inquilino (Columna D)
+
         var dataDep = sheetDep.getDataRange().getValues();
         for (var j = 1; j < dataDep.length; j++) {
-          if (dataDep[j][4] == dataInv[i][1]) {
-            sheetDep.getRange(j + 1, 6).setValue('Ocupado');
+          Logger.log("Comparando ID Departamento: " + dataDep[j][4] + " con " + idDepartamento);
+          if (dataDep[j][4] == idDepartamento) {
+            sheetDep.getRange(j + 1, 7).setValue('Ocupado');
+            sheetDep.getRange(j + 1, 6).setValue(correoInquilino);
             break;
           }
         }
