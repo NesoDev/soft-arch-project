@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <?!= include('styles'); ?>
+  </head>
+  <body>
+    <h1>Rendo - Sistema de Gestión de Arrendamientos</h1>
+
+    <div id="mensaje"></div>
+
+    <div id="menu" style="display: none;">
+      <button onclick="cargarVista('gestionPropiedades')">Gestionar Propiedades</button>
+      <button onclick="cargarVista('gestionDepartamentos')">Gestionar Departamentos</button>
+    </div>
+
+    <div id="contenidoVista">
+      <p>Selecciona una opción para comenzar.</p>
+    </div>
+
+    <?!= include('scriptAutenticacion'); ?>
+    <?!= include('scriptPrincipal'); ?>
+    <?!= include('scriptDepartamentos'); ?>
+    <?!= include('scriptPropiedades'); ?>
+
+  </body>
+</html>

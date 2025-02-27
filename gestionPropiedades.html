@@ -1,0 +1,18 @@
+<div>
+  <h2>Gestión de Propiedades</h2>
+
+  <!-- Botones CRUD -->
+  <button onclick="mostrarFormulario('crearProp')">➕ Crear Propiedad</button>
+  <button onclick="mostrarFormulario('editarProp')">✏️ Editar Propiedad</button>
+  <button onclick="mostrarFormulario('eliminarProp')">❌ Eliminar Propiedad</button>
+  <button onclick="cargarPropiedades()">🔄 Actualizar Listado</button>
+
+  <!-- Contenedor para formularios -->
+  <div id="formulario" style="display:none;"></div>
+
+  <!-- Lista de propiedades -->
+  <h3>Mis Propiedades</h3>
+  <ul id="listaPropiedades"></ul>
+
+  <button onclick="volverAlMenu()">Volver al Menú Principal</button>
+</div>

@@ -1,0 +1,70 @@
+<script>
+  function cargarDepartamentos() {
+    google.script.run.withSuccessHandler(function(departamentos) {
+      var lista = document.getElementById("listaDepartamentos");
+      lista.innerHTML = ""; 
+
+      if (departamentos.length === 0) {
+        lista.innerHTML = "<li>🔹 No tienes departamentos registrados.</li>";
+      } else {
+        departamentos.forEach(function(depto) {
+          var li = document.createElement("li");
+          li.textContent = `ID: ${depto.id} - ${depto.nombre} - Alquiler: S/.${depto.alquiler} - Estado: ${depto.estado}`;
+          lista.appendChild(li);
+        });
+      }
+    }).getDepartamentos();
+  }
+
+  function mostrarFormularioDepa(accion) {
+    var form = document.getElementById("formularioDepa");
+    form.style.display = "block";
+
+    google.script.run.withSuccessHandler(function(departamentos) {
+      var opciones = `<select id="departamentoSeleccionado">
+                        <option value="">Seleccione un departamento</option>`;
+      departamentos.forEach(function(depto) {
+        opciones += `<option value="${depto.id}">${depto.nombre} - ${depto.id}</option>`;
+      });
+      opciones += `</select>`;
+
+      if (accion === 'crearDepa') {
+        form.innerHTML = `
+          <h3>➕ Crear Departamento</h3>
+          <input type="text" id="nombreDepto" placeholder="Nombre">
+          <input type="number" id="alquilerDepto" placeholder="Alquiler">
+          <input type="number" id="garantiaDepto" placeholder="Garantía">
+          <input type="number" id="diaPagoDepto" min="1" max="31" placeholder="Día de Pago">
+          <button onclick="crearDepartamento()">Guardar</button>
+          <button onclick="ocultarFormularioDepa()">Cancelar</button>
+        `;
+      } else if (accion === 'editarDepa') {
+        form.innerHTML = `
+          <h3>✏️ Editar Departamento</h3>
+          ${opciones}
+          <input type="text" id="nuevoNombreDepto" placeholder="Nuevo Nombre">
+          <button onclick="editarDepartamento()">Guardar Cambios</button>
+          <button onclick="ocultarFormularioDepa()">Cancelar</button>
+        `;
+      } else if (accion === 'eliminarDepa') {
+        form.innerHTML = `
+          <h3>❌ Eliminar Departamento</h3>
+          ${opciones}
+          <button onclick="eliminarDepartamento()">Eliminar</button>
+          <button onclick="ocultarFormularioDepa()">Cancelar</button>
+        `;
+      }
+    }).getDepartamentos();
+  }
+
+  function crearDepartamento() {
+    var nombre = document.getElementById("nombreDepto").value.trim();
+    google.script.run.withSuccessHandler(function(msg) {
+      alert(msg);
+      ocultarFormularioDepa();
+      cargarDepartamentos();
+    }).addDepartamento(nombre);
+  }
+
+  cargarDepartamentos();
+</script>

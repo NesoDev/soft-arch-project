@@ -1,0 +1,18 @@
+<div>
+  <h2>Gestión de Departamentos</h2>
+
+  <!-- Botones CRUD -->
+  <button onclick="mostrarFormularioDepa('crearDepa')">➕ Crear Departamento</button>
+  <button onclick="mostrarFormularioDepa('editarDepa')">✏️ Editar Departamento</button>
+  <button onclick="mostrarFormularioDepa('eliminarDepa')">❌ Eliminar Departamento</button>
+  <button onclick="cargarDepartamentos()">🔄 Actualizar Listado</button>
+
+  <!-- Contenedor para formularios -->
+  <div id="formularioDepa" style="display:none;"></div>
+
+  <!-- Lista de departamentos -->
+  <h3>Mis Departamentos</h3>
+  <ul id="listaDepartamentos"></ul>
+
+  <button onclick="volverAlMenu()">Volver al Menú Principal</button>
+</div>
