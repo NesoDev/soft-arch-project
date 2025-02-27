@@ -1,0 +1,15 @@
+<script>
+
+  function cargarVista(vista) {
+    google.script.run.withSuccessHandler(function(html) {
+      document.getElementById("contenidoVista").innerHTML = html;
+      document.getElementById("menu").style.display = "none"; // Oculta el menú
+    }).cargarHtml(vista);
+  }
+
+  function volverAlMenu() {
+    document.getElementById("contenidoVista").innerHTML = "<p>Selecciona una opción para comenzar.</p>";
+    document.getElementById("menu").style.display = "block";
+  }
+
+</script>

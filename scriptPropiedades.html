@@ -1,0 +1,238 @@
+
+
+<script>
+  function cargarPropiedades() {
+    google.script.run.withFailureHandler(function(error) {
+        alert("❌ Error al cargar propiedades: " + error.message);
+    }).withSuccessHandler(function(propiedades) {
+        var lista = document.getElementById("listaPropiedades");
+        if (!lista) return; 
+
+        lista.innerHTML = ""; 
+
+        if (propiedades.length === 0) {
+            lista.innerHTML = "<li>🔹 No tienes propiedades registradas.</li>";
+        } else {
+            var tabla = document.createElement("table");
+            tabla.style.width = "100%";
+            tabla.style.borderCollapse = "collapse";
+
+            
+            var thead = document.createElement("thead");
+            thead.innerHTML = `
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Dirección</th>
+                    <th>Referencia</th>
+                    <th>Cant. Deptos</th>
+                    <th>Área (m²)</th>
+                    <th>Servicios</th>
+                    <th>Nro. Pisos</th>
+                    <th>Estacionamiento</th>
+                    <th>Foto</th>
+                </tr>
+            `;
+            tabla.appendChild(thead);
+
+            
+            var tbody = document.createElement("tbody");
+
+            propiedades.forEach(function(propiedad) {
+                var fila = document.createElement("tr");
+
+                fila.innerHTML = `
+                    <td>${propiedad.id}</td>
+                    <td>${propiedad.nombre}</td>
+                    <td>${propiedad.direccion}</td>
+                    <td>${propiedad.referencia}</td>
+                    <td>${propiedad.cantidadDeptos}</td>
+                    <td>${propiedad.area}</td>
+                    <td>${propiedad.servicios.join(", ")}</td>
+                    <td>${propiedad.numPisos}</td>
+                    <td>${propiedad.estacionamiento}</td>
+                    <td>${propiedad.foto ? `<a href="${propiedad.foto}" target="_blank">Ver imagen</a>` : "Sin foto"}</td>
+                `;
+
+                tbody.appendChild(fila);
+            });
+
+            tabla.appendChild(tbody);
+            lista.appendChild(tabla);
+        }
+    }).getPropiedades();
+  }
+
+
+  function mostrarFormulario(accion) {
+    var form = document.getElementById("formulario");
+    form.style.display = "block";
+
+    if (accion === 'crearProp') {
+      form.innerHTML = `
+        <h3>➕ Crear Propiedad</h3>
+
+        <input type="text" id="nombreProp" placeholder="Nombre de la Propiedad"><br><br>
+        <input type="text" id="direccionProp" placeholder="Dirección"><br><br>
+        <input type="text" id="referenciaProp" placeholder="Referencia"><br><br>
+        <input type="number" id="cantidadDeptos" placeholder="Cantidad de Departamentos"><br><br>
+        <input type="number" id="areaProp" placeholder="Área en m²"><br><br>
+        <label><b>Servicios</b></label><br>
+        <div>
+          <input type="checkbox" id="servicioLuz" value="Luz">
+          <label for="servicioLuz">Luz</label>
+          
+          <input type="checkbox" id="servicioAgua" value="Agua">
+          <label for="servicioAgua">Agua</label>
+        </div><br>
+        <input type="number" id="numPisosProp" placeholder="Número de Pisos"><br><br>
+        <label><b>Estacionamiento</b></label>
+        <div>
+          <input type="radio" id="estSi" name="estacionamiento" value="Sí">
+          <label for="estSi">Sí</label>
+          
+          <input type="radio" id="estNo" name="estacionamiento" value="No">
+          <label for="estNo">No</label>
+        </div>
+        <br>
+        <label><b>Foto</b></label><br>
+        <input type="file" id="fotoProp">
+        <button onclick="crearPropiedad()">Guardar</button>
+        <button onclick="ocultarFormulario()">Cancelar</button>
+      `;
+    } 
+    else if (accion === 'editarProp' || accion === 'eliminarProp') {
+      google.script.run.withSuccessHandler(function(propiedades) {
+        var opciones = `<select id="propiedadSeleccionada">
+                          <option value="">Seleccione una propiedad</option>`;
+        propiedades.forEach(function(propiedad) {
+          opciones += `<option value="${propiedad.id}">${propiedad.id} - ${propiedad.nombre}</option>`;
+        });
+        opciones += `</select>`;
+
+        if (accion === 'editarProp') {
+          form.innerHTML = `
+            <h3>✏️ Editar Propiedad</h3>
+            ${opciones}
+            <input type="text" id="nuevoNombre" placeholder="Nuevo Nombre">
+            <input type="text" id="nuevaDireccion" placeholder="Nueva Dirección">
+            <button onclick="editarPropiedad()">Guardar Cambios</button>
+            <button onclick="ocultarFormulario()">Cancelar</button>
+          `;
+        } 
+        else if (accion === 'eliminarProp') {
+          form.innerHTML = `
+            <h3>❌ Eliminar Propiedad</h3>
+            ${opciones}
+            <button onclick="eliminarPropiedad()">Eliminar</button>
+            <button onclick="ocultarFormulario()">Cancelar</button>
+          `;
+        }
+      }).getPropiedades();
+    }
+  }
+
+  function ocultarFormulario() {
+    document.getElementById("formulario").style.display = "none";
+  }
+
+  function crearPropiedad() {
+    var nombre = document.getElementById("nombreProp").value;
+    var direccion = document.getElementById("direccionProp").value;
+    var referencia = document.getElementById("referenciaProp").value;
+    var cantidadDeptos = document.getElementById("cantidadDeptos").value;
+    var area = document.getElementById("areaProp").value;
+    var numPisos = document.getElementById("numPisosProp").value;
+  
+  // Obtener los servicios seleccionados
+  var servicios = [];
+  if (document.getElementById("servicioLuz").checked) servicios.push("Luz");
+  if (document.getElementById("servicioAgua").checked) servicios.push("Agua");
+  
+  var serviciosStr = servicios.join(", ");
+
+  var estacionamiento = document.querySelector('input[name="estacionamiento"]:checked');
+  var estacionamientoValue = estacionamiento ? estacionamiento.value : "No especificado";
+
+  var fotoInput = document.getElementById("fotoProp");
+  if (fotoInput.files.length > 0) {
+        var file = fotoInput.files[0];
+        var reader = new FileReader();
+
+        reader.onload = function (e) {
+            var fileData = e.target.result.split(",")[1]; 
+
+            
+            google.script.run.withSuccessHandler(function(msg) {
+                alert("🔍 Respuesta del servidor: " + msg);
+                ocultarFormulario();
+                cargarPropiedades();
+            }).addPropiedad(nombre, direccion, referencia, cantidadDeptos, area, numPisos, serviciosStr, estacionamientoValue, fileData);
+        };
+
+        reader.readAsDataURL(file);
+    } else {
+        alert("Por favor, selecciona una imagen.");
+    }
+
+
+
+    /*google.script.run.withSuccessHandler(function(msg) {
+      alert("🔍 Respuesta del servidor: " + msg); // Muestra respuesta del backend
+      ocultarFormulario();
+      cargarPropiedades();
+    }).addPropiedad(nombre, direccion,referencia,cantidadDeptos,area,numPisos);*/
+  }
+
+  function editarPropiedad() {
+    var propiedadSelect = document.getElementById("propiedadSeleccionada");
+
+    if (!propiedadSelect) {
+        alert("Error: No se encontró el combo box de propiedades.");
+        return;
+    }
+
+    var id = propiedadSelect.value.trim();
+    var nuevoNombre = document.getElementById("nuevoNombre").value.trim();
+    var nuevaDireccion = document.getElementById("nuevaDireccion").value.trim();
+
+    if (!id) {
+        alert("Por favor, selecciona una propiedad.");
+        return;
+    }
+
+    google.script.run.withFailureHandler(function(error) {
+        alert("❌ Error al editar propiedad: " + error.message);
+    }).withSuccessHandler(function(msg) {
+        alert(msg);
+        ocultarFormulario();
+        cargarPropiedades();
+    }).editPropiedad(id, nuevoNombre, nuevaDireccion); // No usar parseInt(id)
+  }
+
+  function eliminarPropiedad() {
+    var propiedadSelect = document.getElementById("propiedadSeleccionada");
+
+    if (!propiedadSelect) {
+        alert("Error: No se encontró el combo box de propiedades.");
+        return;
+    }
+
+    var id = propiedadSelect.value;
+
+    if (!id) {
+        alert("Por favor, selecciona una propiedad.");
+        return;
+    }
+
+    google.script.run.withFailureHandler(function(error) {
+        alert("❌ Error al eliminar propiedad: " + error.message);
+    }).withSuccessHandler(function(msg) {
+        alert(msg);
+        ocultarFormulario();
+        cargarPropiedades();
+    }).deletePropiedad(id); // No usar parseInt(id)
+  }
+
+  cargarPropiedades();
+</script>

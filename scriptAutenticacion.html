@@ -1,0 +1,29 @@
+<script>
+  function verificarAcceso() {
+    console.log("🟡 Iniciando verificación de usuario... ScriptAuth");
+
+    google.script.run.withSuccessHandler(function(usuario) {
+      console.log("🟢 Correo detectado:", usuario.email);
+
+      let mensajeElemento = document.getElementById("mensaje");
+      let menuOpcionesElemento = document.getElementById("menu");
+
+      if (!mensajeElemento || !menuOpcionesElemento) {
+        console.error("❌ ERROR: No se encontró el elemento 'mensaje' o 'menu' en el DOM.");
+        return;
+      }
+
+      if (usuario.esPropietario) {
+        mensajeElemento.innerHTML = "✅ Bienvenido, " + usuario.email;
+        menuOpcionesElemento.style.display = "block"; // Muestra el menú
+      } else {
+        mensajeElemento.innerHTML = `
+          ⚠️ <b>Acceso denegado.</b> No estás registrado como propietario.<br>
+          Si crees que esto es un error, contacta a: <b>pg9828615@gmail.com</b>`;
+        menuOpcionesElemento.style.display = "none"; // Oculta el menú
+      }
+    }).verificarUsuario();
+  }
+
+  window.onload = verificarAcceso;
+</script>
