@@ -2,14 +2,14 @@
   function cargarDepartamentos() {
     google.script.run.withSuccessHandler(function(departamentos) {
       var lista = document.getElementById("listaDepartamentos");
-      lista.innerHTML = ""; 
+      lista.innerHTML = "";
 
       if (departamentos.length === 0) {
-        lista.innerHTML = "<li>🔹 No tienes departamentos registrados.</li>";
+        lista.innerHTML = "<li>No tienes departamentos registrados.</li>";
       } else {
         departamentos.forEach(function(depto) {
           var li = document.createElement("li");
-          li.textContent = `ID: ${depto.id} - ${depto.nombre} - Alquiler: S/.${depto.alquiler} - Estado: ${depto.estado}`;
+          li.textContent = `ID: ${depto.id} - ${depto.nombre} - Alquiler: S/.${depto.alquiler} - Estado: ${depto.estado} - Inquilino: ${depto.correoInquilino || "Ninguno"}`;
           lista.appendChild(li);
         });
       }
@@ -20,51 +20,117 @@
     var form = document.getElementById("formularioDepa");
     form.style.display = "block";
 
-    google.script.run.withSuccessHandler(function(departamentos) {
-      var opciones = `<select id="departamentoSeleccionado">
-                        <option value="">Seleccione un departamento</option>`;
-      departamentos.forEach(function(depto) {
-        opciones += `<option value="${depto.id}">${depto.nombre} - ${depto.id}</option>`;
+    // Obtener las propiedades para la selección al crear o editar un departamento
+    google.script.run.withSuccessHandler(function(propiedades) {
+      var opcionesPropiedades = `<select id="propiedadSeleccionada">
+                                   <option value="">Seleccione una propiedad</option>`;
+      propiedades.forEach(function(prop) {
+        opcionesPropiedades += `<option value="${prop.id}">${prop.nombre}</option>`;
       });
-      opciones += `</select>`;
+      opcionesPropiedades += `</select>`;
 
-      if (accion === 'crearDepa') {
-        form.innerHTML = `
-          <h3>➕ Crear Departamento</h3>
-          <input type="text" id="nombreDepto" placeholder="Nombre">
-          <input type="number" id="alquilerDepto" placeholder="Alquiler">
-          <input type="number" id="garantiaDepto" placeholder="Garantía">
-          <input type="number" id="diaPagoDepto" min="1" max="31" placeholder="Día de Pago">
-          <button onclick="crearDepartamento()">Guardar</button>
-          <button onclick="ocultarFormularioDepa()">Cancelar</button>
-        `;
-      } else if (accion === 'editarDepa') {
-        form.innerHTML = `
-          <h3>✏️ Editar Departamento</h3>
-          ${opciones}
-          <input type="text" id="nuevoNombreDepto" placeholder="Nuevo Nombre">
-          <button onclick="editarDepartamento()">Guardar Cambios</button>
-          <button onclick="ocultarFormularioDepa()">Cancelar</button>
-        `;
-      } else if (accion === 'eliminarDepa') {
-        form.innerHTML = `
-          <h3>❌ Eliminar Departamento</h3>
-          ${opciones}
-          <button onclick="eliminarDepartamento()">Eliminar</button>
-          <button onclick="ocultarFormularioDepa()">Cancelar</button>
-        `;
-      }
-    }).getDepartamentos();
+      google.script.run.withSuccessHandler(function(departamentos) {
+        var opcionesDepartamentos = `<select id="departamentoSeleccionado">
+                                      <option value="">Seleccione un departamento</option>`;
+        departamentos.forEach(function(depto) {
+          opcionesDepartamentos += `<option value="${depto.id}">${depto.nombre}</option>`;
+        });
+        opcionesDepartamentos += `</select>`;
+
+        if (accion === 'crearDepa') {
+          form.innerHTML = `
+            <h3>➕ Crear Departamento</h3>
+            <label>Propiedad:</label> ${opcionesPropiedades}<br><br>
+            <input type="text" id="nombreDepto" placeholder="Nombre"><br><br>
+            <input type="number" id="alquilerDepto" placeholder="Monto alquiler"><br><br>
+            <input type="text" id="garantiaDepto" placeholder="Garantía"><br><br>
+            <input type="number" id="diaPagoDepto" min="1" max="31" placeholder="Día de Pago"><br><br>
+            <button onclick="crearDepartamento()">Guardar</button>
+            <button onclick="ocultarFormularioDepa()">Cancelar</button>
+          `;
+        } else if (accion === 'editarDepa') {
+          form.innerHTML = `
+            <h3>✏️ Editar Departamento</h3>
+            ${opcionesDepartamentos}<br><br>
+            <label>Propiedad:</label> ${opcionesPropiedades}<br><br>
+            <input type="text" id="nuevoNombreDepto" placeholder="Nuevo Nombre"><br><br>
+            <input type="number" id="nuevoAlquilerDepto" placeholder="Nuevo Monto Alquiler"><br><br>
+            <input type="number" id="nuevoDiaPagoDepto" min="1" max="31" placeholder="Nuevo Día de Pago"><br><br>
+            <input type="text" id="nuevaGarantiaDepto" placeholder="Nueva Garantía"><br><br>
+            <button onclick="editarDepartamento()">Guardar Cambios</button>
+            <button onclick="ocultarFormularioDepa()">Cancelar</button>
+          `;
+        } else if (accion === 'eliminarDepa') {
+          form.innerHTML = `
+            <h3>❌ Eliminar Departamento</h3>
+            ${opcionesDepartamentos}<br><br>
+            <button onclick="eliminarDepartamento()">Eliminar</button>
+            <button onclick="ocultarFormularioDepa()">Cancelar</button>
+          `;
+        }
+      }).getDepartamentos();
+    }).getPropiedades();
   }
 
   function crearDepartamento() {
     var nombre = document.getElementById("nombreDepto").value.trim();
+    var idPropiedad = document.getElementById("propiedadSeleccionada").value;
+    var alquiler = document.getElementById("alquilerDepto").value;
+    var garantia = document.getElementById("garantiaDepto").value;
+    var diaPago = document.getElementById("diaPagoDepto").value;
+
+    if (!nombre || !idPropiedad || !alquiler || !garantia || !diaPago) {
+      alert("⚠️ Todos los campos son obligatorios.");
+      return;
+    }
+
     google.script.run.withSuccessHandler(function(msg) {
       alert(msg);
       ocultarFormularioDepa();
       cargarDepartamentos();
-    }).addDepartamento(nombre);
+    }).addDepartamento(nombre, idPropiedad, alquiler, diaPago, garantia);
+  }
+  
+  function editarDepartamento() {
+    var idDepartamento = document.getElementById("departamentoSeleccionado").value;
+    var nuevaPropiedad = document.getElementById("propiedadSeleccionada").value;
+    var nuevoNombre = document.getElementById("nuevoNombreDepto").value.trim();
+    var nuevoAlquiler = document.getElementById("nuevoAlquilerDepto").value;
+    var nuevoDiaPago = document.getElementById("nuevoDiaPagoDepto").value;
+    var nuevaGarantia = document.getElementById("nuevaGarantiaDepto").value;
+
+    if (!idDepartamento) {
+      alert("⚠️ Selecciona un departamento.");
+      return;
+    }
+
+    google.script.run.withSuccessHandler(function(msg) {
+      alert(msg);
+      ocultarFormularioDepa();
+      cargarDepartamentos();
+    }).editDepartamento(idDepartamento, nuevoNombre, nuevoAlquiler, nuevoDiaPago, nuevaGarantia, nuevaPropiedad);
   }
 
-  cargarDepartamentos();
+  function eliminarDepartamento() {
+    var idDepartamento = document.getElementById("departamentoSeleccionado").value;
+
+    if (!idDepartamento) {
+      alert("⚠️ Selecciona un departamento.");
+      return;
+    }
+
+    google.script.run.withSuccessHandler(function(msg) {
+      alert(msg);
+      ocultarFormularioDepa();
+      cargarDepartamentos();
+    }).deleteDepartamento(idDepartamento);
+  }
+
+  function ocultarFormularioDepa() {
+    document.getElementById("formularioDepa").style.display = "none";
+  }
+
+  window.onload = function() {
+    cargarDepartamentos();
+  };
 </script>
