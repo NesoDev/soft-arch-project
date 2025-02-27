@@ -39,7 +39,7 @@ function addPropiedad(nombre, direccion, referencia, cantidadDeptos, area, numPi
   return "✅ Propiedad agregada correctamente en la fila correcta.";
 }
 
-// Obtener las propiedades de un usuario autenticado
+
 function getPropiedades() {
   var email = Session.getActiveUser().getEmail();
   var ss = SpreadsheetApp.openById("1Y1DybjwnF4MmCAHiydnr-fHy2DE7FTekctV0mIWAu8w");
@@ -109,7 +109,7 @@ function editPropiedad(propiedadId, nuevoNombre, nuevaDireccion, nuevaReferencia
 
 function deletePropiedad(propiedadId) {
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Propiedades');
-  var cell = sheet.getRange("E:E").createTextFinder(propiedadId).findNext(); // Suponiendo que la columna E contiene los IDs
+  var cell = sheet.getRange("E:E").createTextFinder(propiedadId).findNext(); 
 
   if (!cell) {
     return "❌ Error: No se encontró la propiedad.";

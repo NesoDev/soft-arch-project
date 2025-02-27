@@ -225,7 +225,7 @@
     var nuevaCantidadDeptos = document.getElementById("nuevaCantidadDeptos").value.trim();
     var nuevaAreaProp = document.getElementById("nuevaAreaProp").value.trim();
     var nuevoNumPisosProp = document.getElementById("nuevoNumPisosProp").value.trim();
-    var nuevaFotoProp = document.getElementById("nuevaFotoProp").files.length > 0 ? document.getElementById("nuevaFotoProp").files[0] : null;
+    
 
     
     var nuevoServicioLuz = document.getElementById("nuevoServicioLuz").checked ? "Luz" : "";
@@ -236,6 +236,8 @@
     var nuevoEstacionamiento = document.querySelector('input[name="nuevoEstacionamiento"]:checked');
     nuevoEstacionamiento = nuevoEstacionamiento ? nuevoEstacionamiento.value : "";
 
+    var nuevaFotoInput = document.getElementById("nuevaFotoProp");
+    var nuevaFotoProp = nuevaFotoInput.files.length > 0 ? nuevaFotoInput.files[0] : null;
 
 
     if (!id) {
@@ -243,13 +245,39 @@
         return;
     }
 
-    google.script.run.withFailureHandler(function(error) {
+    if (nuevaFotoProp) {
+        var reader = new FileReader();
+        reader.readAsDataURL(nuevaFotoProp);
+        reader.onload = function () {
+            var nuevaFotoBase64 = reader.result.split(',')[1]; 
+            
+            
+            google.script.run.withFailureHandler(function(error) {
+                alert("❌ Error al editar propiedad: " + error.message);
+            }).withSuccessHandler(function(msg) {
+                alert(msg);
+                ocultarFormulario();
+                cargarPropiedades();
+            }).editPropiedad(id, nuevoNombre, nuevaDireccion, nuevaReferencia, nuevaCantidadDeptos, nuevaAreaProp, nuevosServicios, nuevoNumPisosProp, nuevoEstacionamiento, nuevaFotoBase64);
+        };
+    } else {
+        google.script.run.withFailureHandler(function(error) {
+            alert("❌ Error al editar propiedad: " + error.message);
+        }).withSuccessHandler(function(msg) {
+            alert(msg);
+            ocultarFormulario();
+            cargarPropiedades();
+        }).editPropiedad(id, nuevoNombre, nuevaDireccion, nuevaReferencia, nuevaCantidadDeptos, nuevaAreaProp, nuevosServicios, nuevoNumPisosProp, nuevoEstacionamiento, null);
+    }
+
+
+    /*google.script.run.withFailureHandler(function(error) {
         alert("❌ Error al editar propiedad: " + error.message);
     }).withSuccessHandler(function(msg) {
         alert(msg);
         ocultarFormulario();
         cargarPropiedades();
-    }).editPropiedad(id, nuevoNombre, nuevaDireccion, nuevaReferencia, nuevaCantidadDeptos, nuevaAreaProp, nuevosServicios, nuevoNumPisosProp, nuevoEstacionamiento, nuevaFotoProp);  
+    }).editPropiedad(id, nuevoNombre, nuevaDireccion, nuevaReferencia, nuevaCantidadDeptos, nuevaAreaProp, nuevosServicios, nuevoNumPisosProp, nuevoEstacionamiento, nuevaFotoProp);*/
   }
 
   function eliminarPropiedad() {
