@@ -103,7 +103,7 @@
     } 
     else if (accion === 'editarProp' || accion === 'eliminarProp') {
       google.script.run.withSuccessHandler(function(propiedades) {
-        var opciones = `<select id="propiedadSeleccionada">
+        var opciones = `<select id="propiedadSeleccionada" onchange="cargarDatosPropiedad()">
                           <option value="">Seleccione una propiedad</option>`;
         propiedades.forEach(function(propiedad) {
           opciones += `<option value="${propiedad.id}">${propiedad.id} - ${propiedad.nombre}</option>`;
@@ -115,10 +115,15 @@
             <h3>✏️ Editar Propiedad</h3>
             ${opciones}
             <br><br>
+            <label><b>Nombre Propiedad:</b></label><br>
             <input type="text" id="nuevoNombre" placeholder="Nuevo Nombre"><br><br>
+            <label><b>Dirección:</b></label><br>
             <input type="text" id="nuevaDireccion" placeholder="Nueva Dirección"><br><br>
+            <label><b>Referencia:</b></label><br>
             <input type="text" id="nuevaReferencia" placeholder="Nueva Referencia"><br><br>
+            <label><b>Cantidad de Departamentos:</b></label><br>
             <input type="number" id="nuevaCantidadDeptos" placeholder="Cantidad de Departamentos"><br><br>
+            <label><b>Área en m²:</b></label><br>
             <input type="number" id="nuevaAreaProp" placeholder="Área en m²"><br><br>
             <label><b>Servicios</b></label><br>
             <div>
@@ -157,6 +162,40 @@
       }).getPropiedades();
     }
   }
+
+
+  function cargarDatosPropiedad() {
+    var propiedadId = document.getElementById("propiedadSeleccionada").value;
+    
+    if (propiedadId) {
+        google.script.run.withSuccessHandler(function(propiedad) {
+            document.getElementById("nuevoNombre").value = propiedad.nombre || "";
+            document.getElementById("nuevaDireccion").value = propiedad.direccion || "";
+            document.getElementById("nuevaReferencia").value = propiedad.referencia || "";
+            document.getElementById("nuevaCantidadDeptos").value = propiedad.cantidadDeptos || "";
+            document.getElementById("nuevaAreaProp").value = propiedad.area || "";
+            document.getElementById("nuevoNumPisosProp").value = propiedad.numPisos || "";
+
+            
+            document.getElementById("nuevoServicioLuz").checked = propiedad.servicios.includes("Luz");
+            document.getElementById("nuevoServicioAgua").checked = propiedad.servicios.includes("Agua");
+
+            
+            if (propiedad.estacionamiento === "Sí") {
+                document.getElementById("nuevoEstSi").checked = true;
+            } else {
+                document.getElementById("nuevoEstNo").checked = true;
+            }
+        }).getPropiedadPorId(propiedadId);
+    }
+
+  }
+  
+
+  
+
+
+
 
   function ocultarFormulario() {
     document.getElementById("formulario").style.display = "none";

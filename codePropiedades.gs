@@ -120,3 +120,29 @@ function deletePropiedad(propiedadId) {
 
   return "❌ Propiedad eliminada correctamente.";
 }
+
+
+function getPropiedadPorId(propiedadId) {
+  var hoja = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Propiedades");
+  var datos = hoja.getDataRange().getValues();
+  
+  for (var i = 1; i < datos.length; i++) { 
+    if (datos[i][0] == propiedadId) { 
+      return {
+        id: datos[i][0],
+        nombre: datos[i][2],
+        direccion: datos[i][3],
+        referencia: datos[i][4],
+        cantidadDeptos: datos[i][5],
+        area: datos[i][6],
+        servicios: datos[i][7].split(", "), 
+        numPisos: datos[i][8],
+        estacionamiento: datos[i][9],
+        foto: datos[i][11] 
+      };
+    }
+  }
+  return null; 
+}
+
+
