@@ -15,12 +15,14 @@
       <button onclick="cargarVista('gestionInvitaciones')">Gestionar Invitaciones</button>
       <button onclick="cargarVista('gestionReciboAgua')">Gestionar Recibos de Agua</button>
       <button onclick="cargarVista('gestionReciboLuz')">Gestionar Recibos de Luz</button>
+      <button onclick="cargarVista('gestionPagosPropietarios')">Gestionar Pagos</button>
     </div>
 
     <div id="contenidoVista">
       <p>Selecciona una opción para comenzar.</p>
     </div>
 
+    <?!= include('scriptPagosPropietarios'); ?>
     <?!= include('scriptReciboLuz'); ?>
     <?!= include('scriptReciboAgua'); ?>
     <?!= include('scriptInvitaciones'); ?>

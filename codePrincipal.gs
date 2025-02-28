@@ -1,5 +1,13 @@
 function doGet() {
-  return HtmlService.createTemplateFromFile('main').evaluate();
+  var usuario = verificarUsuario();
+
+  if (usuario.esPropietario) {
+    return HtmlService.createTemplateFromFile('gestionPagosPropietarios').evaluate();
+  } else if (usuario.esInquilino) {
+    return HtmlService.createTemplateFromFile('gestionPagosInquilino').evaluate();
+  } else {
+    return HtmlService.createTemplateFromFile('main').evaluate();
+  }
 }
 
 function cargarHtml(nombreVista) {
@@ -18,24 +26,39 @@ function getUsuarioActual() {
 
 function verificarUsuario() {
   var email = getUsuarioActual().trim().toLowerCase();
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Propietarios');
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheetPropietarios = ss.getSheetByName('Propietarios');
+  var sheetInquilinos = ss.getSheetByName('Inquilinos');
 
-  if (!sheet) {
-    Logger.log("❌ ERROR: La hoja 'Propietarios' no existe.");
-    return { email: email, esPropietario: false };
+  if (!sheetPropietarios || !sheetInquilinos) {
+    Logger.log("❌ ERROR: No se encontraron las hojas de usuarios.");
+    return { email: email, esPropietario: false, esInquilino: false };
   }
 
-  var data = sheet.getDataRange().getValues();
-  var esPropietario = false;
+  var dataPropietarios = sheetPropietarios.getDataRange().getValues();
+  var dataInquilinos = sheetInquilinos.getDataRange().getValues();
 
-  for (var i = 1; i < data.length; i++) {
-    var emailPropietario = data[i][1].toString().trim().toLowerCase(); // Normalizar el email
-    if (emailPropietario === email) {
+  var esPropietario = false;
+  var esInquilino = false;
+
+  for (var i = 1; i < dataPropietarios.length; i++) {
+    if (dataPropietarios[i][1].toString().trim().toLowerCase() === email) {
       esPropietario = true;
       break;
     }
   }
 
-  Logger.log("🔍 Validación de usuario (" + email + "): " + (esPropietario ? "✅ Propietario registrado" : "❌ No registrado"));
-  return { email: email, esPropietario: esPropietario };
+  if (!esPropietario) { // Solo si NO es propietario, verificamos si es inquilino
+    for (var j = 1; j < dataInquilinos.length; j++) {
+      if (dataInquilinos[j][1].toString().trim().toLowerCase() === email) {
+        esInquilino = true;
+        break;
+      }
+    }
+  }
+
+  Logger.log("🔍 Validación de usuario (" + email + "): " + 
+              (esPropietario ? "✅ Propietario" : esInquilino ? "🏠 Inquilino" : "❌ No registrado"));
+
+  return { email: email, esPropietario: esPropietario, esInquilino: esInquilino };
 }

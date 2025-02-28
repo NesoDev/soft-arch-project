@@ -1,0 +1,58 @@
+<script>
+  function cargarPagosInquilino() {
+    google.script.run.withSuccessHandler(function(response) {
+      console.log("✅ Respuesta del backend:", response);
+      var pagos = JSON.parse(response);
+      var lista = document.getElementById("listaPagosInquilino");
+      lista.innerHTML = "";
+
+      pagos.forEach(function(pago) {
+        var li = document.createElement("li");
+        li.innerHTML = `
+          🏠 Departamento: ${pago.idDepartamento} | 💰 Monto: ${pago.montoPagado} | 📅 Mes: ${pago.mesPago} 
+          | Estado: ${pago.estadoPago} 
+        `;
+
+        if (pago.estadoPago === "No Pagado") {
+          var inputFile = document.createElement("input");
+          inputFile.type = "file";
+          inputFile.id = "file-" + pago.idPago;
+
+          var btnSubir = document.createElement("button");
+          btnSubir.textContent = "📤 Subir Comprobante";
+          btnSubir.onclick = function() { subirComprobante(pago.idPago); };
+
+          li.appendChild(inputFile);
+          li.appendChild(btnSubir);
+        } else {
+          li.innerHTML += " ✅ Pago Validado";
+        }
+
+        lista.appendChild(li);
+      });
+    }).listarPagosInquilino();
+  }
+
+  function subirComprobante(idPago) {
+    var inputFile = document.getElementById("file-" + idPago);
+    var file = inputFile.files[0];
+
+    if (!file) {
+      alert("⚠️ Por favor selecciona un archivo.");
+      return;
+    }
+
+    var reader = new FileReader();
+    reader.onload = function(event) {
+      var base64String = event.target.result.split(',')[1]; // Convertir archivo a base64
+      google.script.run.withSuccessHandler(function(msg) {
+        alert(msg);
+        cargarPagosInquilino();
+      }).subirComprobante(idPago, base64String);
+    };
+
+    reader.readAsDataURL(file);
+  }
+
+  window.onload = cargarPagosInquilino;
+</script>

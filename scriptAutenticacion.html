@@ -1,9 +1,9 @@
 <script>
   function verificarAcceso() {
-    console.log("🟡 Iniciando verificación de usuario... ScriptAuth");
+    console.log("🟡 Iniciando verificación de usuario...");
 
     google.script.run.withSuccessHandler(function(usuario) {
-      console.log("🟢 Correo detectado:", usuario.email);
+      console.log("🟢 Usuario detectado:", usuario.email);
 
       let mensajeElemento = document.getElementById("mensaje");
       let menuOpcionesElemento = document.getElementById("menu");
@@ -14,13 +14,27 @@
       }
 
       if (usuario.esPropietario) {
-        mensajeElemento.innerHTML = "✅ Bienvenido, " + usuario.email;
-        menuOpcionesElemento.style.display = "block"; // Muestra el menú
+        mensajeElemento.innerHTML = "✅ Bienvenido, " + usuario.email + " (Propietario)";
+        menuOpcionesElemento.innerHTML = `
+          <button onclick="cargarVista('gestionPropiedades')">Gestionar Propiedades</button>
+          <button onclick="cargarVista('gestionDepartamentos')">Gestionar Departamentos</button>
+          <button onclick="cargarVista('gestionInvitaciones')">Gestionar Invitaciones</button>
+          <button onclick="cargarVista('gestionReciboAgua')">Gestionar Recibos de Agua</button>
+          <button onclick="cargarVista('gestionReciboLuz')">Gestionar Recibos de Luz</button>
+          <button onclick="cargarVista('gestionPagosPropietarios')">Gestionar Pagos</button>
+        `;
+        menuOpcionesElemento.style.display = "block";
+      } else if (usuario.esInquilino) {
+        mensajeElemento.innerHTML = "🏠 Bienvenido, " + usuario.email + " (Inquilino)";
+        menuOpcionesElemento.innerHTML = `
+          <button onclick="cargarVista('gestionPagosInquilino')">Mis Pagos</button>
+        `;
+        menuOpcionesElemento.style.display = "block";
       } else {
         mensajeElemento.innerHTML = `
-          ⚠️ <b>Acceso denegado.</b> No estás registrado como propietario.<br>
+          ⚠️ <b>Acceso denegado.</b> No estás registrado en el sistema.<br>
           Si crees que esto es un error, contacta a: <b>pg9828615@gmail.com</b>`;
-        menuOpcionesElemento.style.display = "none"; // Oculta el menú
+        menuOpcionesElemento.style.display = "none";
       }
     }).verificarUsuario();
   }

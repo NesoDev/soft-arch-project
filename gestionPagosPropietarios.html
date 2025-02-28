@@ -1,0 +1,18 @@
+<div>
+  <h2>Gestión de Pagos de Inquilinos</h2>
+
+  <!-- Filtro para ver solo pagos pendientes o todos -->
+  <label>Filtrar Pagos:</label>
+  <select id="filtroPagos" onchange="cargarPagosPropietario()">
+    <option value="todos">Todos</option>
+    <option value="no_pagado">No Pagados</option>
+    <option value="pagado">Pagados</option>
+  </select>
+
+  <!-- Lista de pagos -->
+  <h3>Pagos de Inquilinos</h3>
+  <ul id="listaPagosPropietario"></ul>
+
+  <button onclick="enviarRecordatorios()">📩 Enviar Recordatorios</button>
+  <button onclick="volverAlMenu()">Volver al Menú Principal</button>
+</div>

@@ -1,0 +1,46 @@
+<script>
+  function cargarPagosPropietario() {
+    google.script.run.withSuccessHandler(function(response) {
+      console.log("✅ Respuesta del backend:", response);
+      var pagos = JSON.parse(response);
+      var filtro = document.getElementById("filtroPagos").value;
+      var lista = document.getElementById("listaPagosPropietario");
+      lista.innerHTML = "";
+
+      pagos.forEach(function(pago) {
+        if (filtro === "pagado" && pago.estadoPago !== "Pagado") return;
+        if (filtro === "no_pagado" && pago.estadoPago !== "No Pagado") return;
+
+        var li = document.createElement("li");
+        li.innerHTML = `
+          🏠 Departamento: ${pago.idDepartamento} | 💰 Monto: ${pago.montoPagado} | 📅 Mes: ${pago.mesPago} 
+          | Estado: ${pago.estadoPago} | 📷 ${pago.comprobante ? `<a href="${pago.comprobante}" target="_blank">Ver Comprobante</a>` : "Sin comprobante"}
+        `;
+
+        if (pago.estadoPago === "No Pagado" && pago.comprobante) {
+          var btnValidar = document.createElement("button");
+          btnValidar.textContent = "✅ Validar Pago";
+          btnValidar.onclick = function() { validarPago(pago.idPago); };
+          li.appendChild(btnValidar);
+        }
+
+        lista.appendChild(li);
+      });
+    }).listarPagos();
+  }
+
+  function validarPago(idPago) {
+    google.script.run.withSuccessHandler(function(msg) {
+      alert(msg);
+      cargarPagosPropietario();
+    }).validarPago(idPago);
+  }
+
+  function enviarRecordatorios() {
+    google.script.run.withSuccessHandler(function(msg) {
+      alert(msg);
+    }).enviarRecordatorios();
+  }
+
+  window.onload = cargarPagosPropietario;
+</script>

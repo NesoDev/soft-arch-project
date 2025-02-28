@@ -72,11 +72,11 @@
       form.innerHTML = `
         <h3>➕ Crear Propiedad</h3>
         <form id="crearPropiedadForm">
-          <input type="text" id="nombreProp" placeholder="Nombre de la Propiedad" required><br><br>
-          <input type="text" id="direccionProp" placeholder="Dirección" required><br><br>
-          <input type="text" id="referenciaProp" placeholder="Referencia" required><br><br>
+          <input type="text" id="nombreProp" placeholder="Nombre de la Propiedad" required minlength="5" maxlength="15"><br><br>
+          <input type="text" id="direccionProp" placeholder="Dirección" required minlength="10"><br><br>
+          <input type="text" id="referenciaProp" placeholder="Referencia" required minlength="5"><br><br>
           <input type="number" id="cantidadDeptos" placeholder="Cantidad de Departamentos" required min="1"><br><br>
-          <input type="number" id="areaProp" placeholder="Área en m²" required><br><br>
+          <input type="number" id="areaProp" placeholder="Área en m²" required min="50"><br><br>
           <label><b>Servicios (Selecciona al menos uno)</b></label><br>
           <div>
             <input type="checkbox" id="servicioLuz" value="Luz">
@@ -127,15 +127,15 @@
             <br><br>
             <form id="editarPropiedadForm">
             <label><b>Nombre:</b></label><br>
-            <input type="text" id="nuevoNombre" placeholder="Nuevo Nombre" required><br><br>
+            <input type="text" id="nuevoNombre" placeholder="Nuevo Nombre" required minlength="5" maxlength="15"><br><br>
             <label><b>Dirección::</b></label><br>
-            <input type="text" id="nuevaDireccion" placeholder="Nueva Dirección" required><br><br>
+            <input type="text" id="nuevaDireccion" placeholder="Nueva Dirección" required minlength="10"><br><br>
             <label><b>Referencia:</b></label><br>
-            <input type="text" id="nuevaReferencia" placeholder="Nueva Referencia" required><br><br>
+            <input type="text" id="nuevaReferencia" placeholder="Nueva Referencia" required minlength="5"><br><br>
             <label><b>N°de Departamentos:</b></label><br>
             <input type="number" id="nuevaCantidadDeptos" placeholder="Cantidad de Departamentos" required min="1"><br><br>
             <label><b>Área en m²:</b></label><br>
-            <input type="number" id="nuevaAreaProp" placeholder="Área en m²" required><br><br>
+            <input type="number" id="nuevaAreaProp" placeholder="Área en m²" required min="50"><br><br>
             <label><b>Servicios (Selecciona al menos uno)</b></label><br>
             <div>
               <input type="checkbox" id="nuevoServicioLuz" value="Luz">

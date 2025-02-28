@@ -50,16 +50,25 @@
     }).enviarInvitacion(idDepartamento, emailInquilino);
   }
 
+
 function cargarInvitaciones() {
   console.log("📢 Enviando solicitud a obtenerInvitaciones()...");
 
   google.script.run
-    .withSuccessHandler(function(invitaciones) {
-      console.log("✅ Respuesta recibida del backend:", invitaciones);
+    .withSuccessHandler(function(respuesta) {
+      console.log("✅ Respuesta recibida del backend:", respuesta);
 
-      if (!invitaciones || !Array.isArray(invitaciones)) {
-        console.warn("⚠️ Error: Respuesta inválida, mostrando el mensaje recibido.", invitaciones);
-        alert("⚠️ Respuesta inesperada: " + JSON.stringify(invitaciones));
+      if (!respuesta) {
+        console.warn("⚠️ Error: Respuesta inválida, mostrando el mensaje recibido.", respuesta);
+        alert("⚠️ Respuesta inesperada: " + JSON.stringify(respuesta));
+        return;
+      }
+
+      try {
+        var invitaciones = typeof respuesta === "string" ? JSON.parse(respuesta) : respuesta;
+      } catch (error) {
+        console.error("❌ Error al parsear la respuesta JSON:", error);
+        alert("❌ Error procesando la respuesta del servidor.");
         return;
       }
 
@@ -91,6 +100,11 @@ function cargarInvitaciones() {
     })
     .obtenerInvitaciones();
 }
+
+
+
+
+
 
   function cancelarInvitacion(idInvitacion) {
     google.script.run.withSuccessHandler(function(msg) {
