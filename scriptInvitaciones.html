@@ -50,30 +50,61 @@
     }).enviarInvitacion(idDepartamento, emailInquilino);
   }
 
-  function cargarInvitaciones() {
-    google.script.run.withSuccessHandler(function(invitaciones) {
+
+function cargarInvitaciones() {
+  console.log("📢 Enviando solicitud a obtenerInvitaciones()...");
+
+  google.script.run
+    .withSuccessHandler(function(respuesta) {
+      console.log("✅ Respuesta recibida del backend:", respuesta);
+
+      if (!respuesta) {
+        console.warn("⚠️ Error: Respuesta inválida, mostrando el mensaje recibido.", respuesta);
+        alert("⚠️ Respuesta inesperada: " + JSON.stringify(respuesta));
+        return;
+      }
+
+      try {
+        var invitaciones = typeof respuesta === "string" ? JSON.parse(respuesta) : respuesta;
+      } catch (error) {
+        console.error("❌ Error al parsear la respuesta JSON:", error);
+        alert("❌ Error procesando la respuesta del servidor.");
+        return;
+      }
+
       var lista = document.getElementById("listaInvitaciones");
       lista.innerHTML = "";
-      
-      if (invitaciones.length === 0) {
-        lista.innerHTML = "<li>No hay invitaciones registradas.</li>";
-      } else {
-        invitaciones.forEach(function(inv) {
-          var li = document.createElement("li");
-          li.innerHTML = `ID: ${inv.id} - Departamento: ${inv.departamento} - Estado: ${inv.estado}`;
-          
-          if (inv.estado === "Pendiente") {
-            var btnCancelar = document.createElement("button");
-            btnCancelar.textContent = "Cancelar";
-            btnCancelar.onclick = function() { cancelarInvitacion(inv.id); };
-            li.appendChild(btnCancelar);
-          }
-          
-          lista.appendChild(li);
-        });
+
+      if (invitaciones[0]?.mensaje) {
+        lista.innerHTML = `<li>${invitaciones[0].mensaje}</li>`;
+        return;
       }
-    }).obtenerInvitaciones();
-  }
+
+      invitaciones.forEach(function(inv) {
+        var li = document.createElement("li");
+        li.innerHTML = `ID: ${inv.id} - Departamento: ${inv.departamento} - Estado: ${inv.estado}`;
+
+        if (inv.estado === "Pendiente") {
+          var btnCancelar = document.createElement("button");
+          btnCancelar.textContent = "Cancelar";
+          btnCancelar.onclick = function() { cancelarInvitacion(inv.id); };
+          li.appendChild(btnCancelar);
+        }
+
+        lista.appendChild(li);
+      });
+    })
+    .withFailureHandler(function(error) {
+      console.error("❌ Error en la conexión con el backend:", error);
+      alert("❌ Error en la conexión con el servidor: " + JSON.stringify(error));
+    })
+    .obtenerInvitaciones();
+}
+
+
+
+
+
 
   function cancelarInvitacion(idInvitacion) {
     google.script.run.withSuccessHandler(function(msg) {

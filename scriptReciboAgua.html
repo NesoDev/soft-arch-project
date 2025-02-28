@@ -1,0 +1,190 @@
+<script>
+
+  function cargarPropiedadesRecibo(idPropiedadSeleccionada = "") {
+    google.script.run.withSuccessHandler(function(propiedades) {
+      var select = document.getElementById("propiedadSeleccionada");
+      select.innerHTML = "<option value=''>Seleccione una propiedad</option>";
+
+      propiedades.forEach(function(prop) {
+        var option = document.createElement("option");
+        option.value = prop.idPropiedad;
+        option.textContent = prop.nombre;
+        if (prop.idPropiedad === idPropiedadSeleccionada) {
+          option.selected = true; // ✅ Mantiene la propiedad seleccionada en la edición
+        }
+        select.appendChild(option);
+      });
+    }).obtenerPropiedadesPorUsuario();
+  }
+
+
+
+  function cargarTarifas() {
+    google.script.run.withSuccessHandler(function(tarifas) {
+      var select = document.getElementById("tarifaSeleccionada");
+      select.innerHTML = "<option value=''>Seleccione una tarifa</option>";
+
+      tarifas.forEach(function(tarifa) {
+        var option = document.createElement("option");
+        option.value = tarifa;
+        option.textContent = tarifa;
+        select.appendChild(option);
+      });
+    }).getTarifasAgua();
+  }
+
+  function mostrarFormularioRecibo(accion, idRecibo = "") {
+  var form = document.getElementById("formularioRecibo");
+  form.style.display = "block";
+
+  if (accion === 'crear') {
+    form.innerHTML = `
+      <h3>➕ Agregar Recibo</h3>
+      <label>Seleccione una Propiedad:</label> 
+      <select id="propiedadSeleccionada"></select><br><br>
+      <label>Seleccione una Tarifa:</label> 
+      <select id="tarifaSeleccionada"></select><br><br>
+      <label>Mes Facturado:</label> <input type="text" id="mesFacturado"><br><br>
+      <label>Fecha de Emisión:</label> <input type="date" id="fechaEmision"><br><br>
+      <label>Fecha de Vencimiento:</label> <input type="date" id="fechaVencimiento"><br><br>
+      <label>Consumo (m³):</label> <input type="number" id="consumo" min="0"><br><br>
+      <label>Cargo Fijo (S/.):</label> <input type="number" id="cargoFijo" min="0"><br><br>
+      <label>Agua Potable (S/.):</label> <input type="number" id="aguaPotable" min="0"><br><br>
+      <label>Alcantarillado (S/.):</label> <input type="number" id="alcantarillado" min="0"><br><br>
+      <label>Monto Total (S/.):</label> <input type="number" id="montoTotal" min="0"><br><br>
+      <button onclick="guardarRecibo()">Guardar</button>
+      <button onclick="ocultarFormularioRecibo()">Cancelar</button>
+    `;
+    cargarPropiedadesRecibo();
+    cargarTarifas();
+  } 
+  else if (accion === 'editar') {
+    google.script.run.withSuccessHandler(function(response) {
+      var recibo = JSON.parse(response); // 🔹 Convierte la respuesta JSON en un objeto
+
+      if (recibo.error) { // 🔹 Manejo de error si el recibo no existe
+        alert("❌ Error: " + recibo.error);
+        ocultarFormularioRecibo();
+        return;
+      }
+
+      form.innerHTML = `
+        <h3>✏️ Editar Recibo</h3>
+        <label>Seleccione una Propiedad:</label> 
+        <select id="propiedadSeleccionada"></select><br><br>
+        <label>Seleccione una Tarifa:</label> 
+        <select id="tarifaSeleccionada"></select><br><br>
+        <label>Mes Facturado:</label> <input type="text" id="mesFacturado" value="${recibo.mesFacturado}"><br><br>
+        <label>Fecha de Emisión:</label> <input type="date" id="fechaEmision" value="${recibo.fechaEmision}"><br><br>
+        <label>Fecha de Vencimiento:</label> <input type="date" id="fechaVencimiento" value="${recibo.fechaVencimiento}"><br><br>
+        <label>Consumo (m³):</label> <input type="number" id="consumo" min="0" value="${recibo.consumo}"><br><br>
+        <label>Cargo Fijo (S/.):</label> <input type="number" id="cargoFijo" min="0" value="${recibo.cargoFijo}"><br><br>
+        <label>Agua Potable (S/.):</label> <input type="number" id="aguaPotable" min="0" value="${recibo.aguaPotable}"><br><br>
+        <label>Alcantarillado (S/.):</label> <input type="number" id="alcantarillado" min="0" value="${recibo.alcantarillado}"><br><br>
+        <label>Monto Total (S/.):</label> <input type="number" id="montoTotal" min="0" value="${recibo.montoTotal}"><br><br>
+        <button onclick="editarRecibo('${idRecibo}')">Actualizar</button>
+        <button onclick="ocultarFormularioRecibo()">Cancelar</button>
+      `;
+
+      cargarPropiedadesRecibo(recibo.idPropiedad); // ✅ Carga las propiedades con la seleccionada
+      cargarTarifas();
+      
+    }).obtenerReciboPorId(idRecibo);
+  }
+}
+
+
+  function ocultarFormularioRecibo() {
+    document.getElementById("formularioRecibo").style.display = "none";
+  }
+
+  function guardarRecibo() {
+    var idPropiedad = document.getElementById("propiedadSeleccionada").value;
+    var tarifaAplicada = document.getElementById("tarifaSeleccionada").value;
+    var mesFacturado = document.getElementById("mesFacturado").value.trim();
+    var fechaEmision = document.getElementById("fechaEmision").value;
+    var fechaVencimiento = document.getElementById("fechaVencimiento").value;
+    var consumo = document.getElementById("consumo").value;
+    var cargoFijo = document.getElementById("cargoFijo").value;
+    var aguaPotable = document.getElementById("aguaPotable").value;
+    var alcantarillado = document.getElementById("alcantarillado").value;
+    var montoTotal = document.getElementById("montoTotal").value;
+
+    google.script.run.withSuccessHandler(function(correoUsuario) {
+      google.script.run.withSuccessHandler(function(msg) {
+        alert(msg);
+        cargarRecibos();
+      }).crearReciboAgua(correoUsuario, idPropiedad, tarifaAplicada, mesFacturado, fechaEmision, fechaVencimiento, consumo, cargoFijo, aguaPotable, alcantarillado, montoTotal);
+    }).obtenerCorreoUsuario();
+  }
+
+  function cargarRecibos() {
+    google.script.run.withSuccessHandler(function(correoUsuario) {
+      console.log("✅ Correo obtenido: " + correoUsuario);
+
+      google.script.run.withSuccessHandler(function(response) {
+        console.log("✅ Respuesta recibida:", response);
+
+        var recibos = JSON.parse(response); // 🔹 Convierte la respuesta JSON a objeto JavaScript
+
+        var lista = document.getElementById("listaRecibos");
+        lista.innerHTML = "";
+
+        if (recibos.length === 0) {
+          lista.innerHTML = "<li>No hay recibos registrados.</li>";
+        } else {
+          recibos.forEach(function(rec) {
+            var li = document.createElement("li");
+            li.innerHTML = `ID: ${rec.idRecibo} - Tarifa: ${rec.tarifaAplicada} - Monto Total: S/.${rec.montoTotal} `;
+
+            var btnEditar = document.createElement("button");
+            btnEditar.textContent = "✏️ Editar";
+            btnEditar.onclick = function() { mostrarFormularioRecibo('editar', rec.idRecibo); };
+
+            var btnEliminar = document.createElement("button");
+            btnEliminar.textContent = "❌ Eliminar";
+            btnEliminar.onclick = function() { eliminarRecibo(rec.idRecibo); };
+
+            li.appendChild(btnEditar);
+            li.appendChild(btnEliminar);
+            lista.appendChild(li);
+          });
+        }
+      }).obtenerRecibosAgua(correoUsuario); // 🔹 Usa el correo obtenido del servidor
+    }).obtenerCorreoUsuario(); // 🔹 Primero obtenemos el correo desde Apps Script
+  }
+
+  function editarRecibo(idRecibo) {
+    var idPropiedad = document.getElementById("propiedadSeleccionada").value;
+    var tarifaAplicada = document.getElementById("tarifaSeleccionada").value;
+    var mesFacturado = document.getElementById("mesFacturado").value.trim();
+    var fechaEmision = document.getElementById("fechaEmision").value;
+    var fechaVencimiento = document.getElementById("fechaVencimiento").value;
+    var consumo = document.getElementById("consumo").value;
+    var cargoFijo = document.getElementById("cargoFijo").value;
+    var aguaPotable = document.getElementById("aguaPotable").value;
+    var alcantarillado = document.getElementById("alcantarillado").value;
+    var montoTotal = document.getElementById("montoTotal").value;
+
+    google.script.run.withSuccessHandler(function(correoUsuario) {
+      google.script.run.withSuccessHandler(function(msg) {
+        alert(msg);
+        cargarRecibos();
+      }).editarReciboAgua(idRecibo, correoUsuario, idPropiedad, tarifaAplicada, mesFacturado, fechaEmision, fechaVencimiento, consumo, cargoFijo, aguaPotable, alcantarillado, montoTotal);
+    }).obtenerCorreoUsuario();
+  }
+
+  function eliminarRecibo(idRecibo) {
+    google.script.run.withSuccessHandler(function(correoUsuario) {
+      google.script.run.withSuccessHandler(function(msg) {
+        alert(msg);
+        cargarRecibos();
+      }).eliminarReciboAgua(idRecibo, correoUsuario); // ✅ Ahora usa el correo obtenido del servidor
+    }).obtenerCorreoUsuario(); // ✅ Primero obtenemos el correo del usuario
+  }
+
+
+  window.onload = function() {
+    cargarRecibos();
+  };
+</script>

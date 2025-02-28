@@ -166,7 +166,3 @@ function getPropiedadPorId(propiedadId) {
   return null; 
 }
 
-
-
-
-

@@ -1,0 +1,136 @@
+<script>
+  function cargarPropiedadesReciboLuz(idPropiedadSeleccionada = "") {
+    google.script.run.withSuccessHandler(function(propiedades) {
+      var select = document.getElementById("propiedadSeleccionada");
+      select.innerHTML = "<option value=''>Seleccione una propiedad</option>";
+
+      propiedades.forEach(function(prop) {
+        var option = document.createElement("option");
+        option.value = prop.idPropiedad;
+        option.textContent = prop.nombre;
+        if (prop.idPropiedad === idPropiedadSeleccionada) {
+          option.selected = true; // ✅ Mantiene la propiedad seleccionada en edición
+        }
+        select.appendChild(option);
+      });
+    }).obtenerPropiedadesPorUsuario();
+  }
+</script>
+
+<script>
+  function mostrarFormularioReciboLuz(accion, idRecibo = "") {
+    var form = document.getElementById("formularioReciboLuz");
+    form.style.display = "block";
+
+    if (accion === 'crear') {
+      form.innerHTML = `
+        <h3>➕ Agregar Recibo de Luz</h3>
+        <label>Seleccione una Propiedad:</label> 
+        <select id="propiedadSeleccionada"></select><br><br>
+        <label>Precio por kWh:</label> <input type="number" id="precioKWh"><br><br>
+        <label>Energía a Facturar (kWh):</label> <input type="number" id="energiaFacturar"><br><br>
+        <label>Cargo Fijo:</label> <input type="number" id="cargoFijo"><br><br>
+        <label>Mantenimiento y Reposición:</label> <input type="number" id="mantRepo"><br><br>
+        <label>Alumbrado Público:</label> <input type="number" id="alumbradoPublico"><br><br>
+        <label>Interés Compensatorio:</label> <input type="number" id="interesComp"><br><br>
+        <label>Fecha de Vencimiento:</label> <input type="date" id="fechaVencimiento"><br><br>
+        <label>Monto Total:</label> <input type="number" id="montoTotal"><br><br>
+        <button onclick="guardarReciboLuz()">Guardar</button>
+        <button onclick="ocultarFormularioReciboLuz()">Cancelar</button>
+      `;
+      cargarPropiedadesReciboLuz();
+    } 
+    else if (accion === 'editar') {
+      google.script.run.withSuccessHandler(function(response) {
+        var recibo = JSON.parse(response);
+        if (recibo.error) {
+          alert("❌ Error: " + recibo.error);
+          ocultarFormularioReciboLuz();
+          return;
+        }
+
+        form.innerHTML = `
+          <h3>✏️ Editar Recibo de Luz</h3>
+          <label>Seleccione una Propiedad:</label> 
+          <select id="propiedadSeleccionada"></select><br><br>
+          <label>Precio por kWh:</label> <input type="number" id="precioKWh" value="${recibo.precioKWh}"><br><br>
+          <label>Energía a Facturar (kWh):</label> <input type="number" id="energiaFacturar" value="${recibo.energiaFacturar}"><br><br>
+          <label>Cargo Fijo:</label> <input type="number" id="cargoFijo" value="${recibo.cargoFijo}"><br><br>
+          <label>Mantenimiento y Reposición:</label> <input type="number" id="mantRepo" value="${recibo.mantRepo}"><br><br>
+          <label>Alumbrado Público:</label> <input type="number" id="alumbradoPublico" value="${recibo.alumbradoPublico}"><br><br>
+          <label>Interés Compensatorio:</label> <input type="number" id="interesComp" value="${recibo.interesComp}"><br><br>
+          <label>Fecha de Vencimiento:</label> <input type="date" id="fechaVencimiento" value="${recibo.fechaVencimiento}"><br><br>
+          <label>Monto Total:</label> <input type="number" id="montoTotal" value="${recibo.montoTotal}"><br><br>
+          <button onclick="editarReciboLuz('${idRecibo}')">Actualizar</button>
+          <button onclick="ocultarFormularioReciboLuz()">Cancelar</button>
+        `;
+        cargarPropiedadesReciboLuz(recibo.idPropiedad);
+      }).obtenerReciboLuzPorId(idRecibo);
+    }
+  }
+</script>
+
+<script>
+  function guardarReciboLuz() {
+    var idPropiedad = document.getElementById("propiedadSeleccionada").value;
+    var precioKWh = document.getElementById("precioKWh").value;
+    var energiaFacturar = document.getElementById("energiaFacturar").value;
+    var cargoFijo = document.getElementById("cargoFijo").value;
+    var mantRepo = document.getElementById("mantRepo").value;
+    var alumbradoPublico = document.getElementById("alumbradoPublico").value;
+    var interesComp = document.getElementById("interesComp").value;
+    var fechaVencimiento = document.getElementById("fechaVencimiento").value;
+    var montoTotal = document.getElementById("montoTotal").value;
+
+    google.script.run.withSuccessHandler(function(msg) {
+      alert(msg);
+      cargarRecibosLuz();
+    }).crearReciboLuz(idPropiedad, precioKWh, energiaFacturar, cargoFijo, mantRepo, alumbradoPublico, interesComp, fechaVencimiento, montoTotal);
+  }
+</script>
+
+<script>
+  function cargarRecibosLuz() {
+    google.script.run.withSuccessHandler(function(response) {
+      var recibos = JSON.parse(response);
+      var lista = document.getElementById("listaRecibosLuz");
+      lista.innerHTML = "";
+
+      if (recibos.length === 0) {
+        lista.innerHTML = "<li>No hay recibos registrados.</li>";
+      } else {
+        recibos.forEach(function(rec) {
+          var li = document.createElement("li");
+          li.innerHTML = `ID: ${rec.idRecibo} - Propiedad: ${rec.idPropiedad} - Monto: S/.${rec.montoTotal} `;
+
+          var btnEditar = document.createElement("button");
+          btnEditar.textContent = "✏️ Editar";
+          btnEditar.onclick = function() { mostrarFormularioReciboLuz('editar', rec.idRecibo); };
+
+          var btnEliminar = document.createElement("button");
+          btnEliminar.textContent = "❌ Eliminar";
+          btnEliminar.onclick = function() { eliminarReciboLuz(rec.idRecibo); };
+
+          li.appendChild(btnEditar);
+          li.appendChild(btnEliminar);
+          lista.appendChild(li);
+        });
+      }
+    }).obtenerRecibosLuz();
+  }
+</script>
+
+<script>
+  function eliminarReciboLuz(idRecibo) {
+    google.script.run.withSuccessHandler(function(msg) {
+      alert(msg);
+      cargarRecibosLuz(); // Recargar la lista después de eliminar
+    }).eliminarReciboLuz(idRecibo);
+  }
+</script>
+
+<script>
+  function ocultarFormularioReciboLuz() {
+    document.getElementById("formularioReciboLuz").style.display = "none";
+  }
+</script>

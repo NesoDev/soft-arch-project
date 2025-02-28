@@ -18,26 +18,50 @@ function getDepartamentosParaInvitaciones() {
   return departamentos;
 }
 
-// Obtener todas las invitaciones registradas en la hoja
 function obtenerInvitaciones() {
-  var sheetInv = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Invitaciones');
-  if (!sheetInv) return [];
+  Logger.log("🚀 FUNCIÓN obtenerInvitaciones() SE ESTÁ EJECUTANDO!");
+  
+  var ss = SpreadsheetApp.openById("1Y1DybjwnF4MmCAHiydnr-fHy2DE7FTekctV0mIWAu8w");
+  var sheetInv = ss.getSheetByName('Invitaciones');
+
+  if (!sheetInv) {
+    Logger.log("❌ ERROR: No se encontró la hoja 'Invitaciones'.");
+    return [{ error: "No se encontró la hoja de invitaciones" }];
+  }
 
   var data = sheetInv.getDataRange().getValues();
+  if (!data || data.length <= 1) {
+    Logger.log("⚠️ ADVERTENCIA: No hay invitaciones registradas.");
+    return [{ mensaje: "No hay invitaciones registradas." }];
+  }
+
+  var usuarioAutenticado = Session.getActiveUser().getEmail().trim().toLowerCase();
+  Logger.log("📌 Usuario autenticado: " + usuarioAutenticado);
+
   var invitaciones = [];
 
   for (var i = 1; i < data.length; i++) {
-    invitaciones.push({
-      id: data[i][0], // ID Invitación
-      departamento: data[i][1], // ID Departamento
-      propietario: data[i][2], // Correo del propietario
-      inquilino: data[i][3], // Correo del inquilino
-      estado: data[i][4], // Estado de la invitación
-      fechaEnvio: data[i][5] // Fecha de envío
-    });
+    var propietario = (data[i][2] || "").trim().toLowerCase();
+
+    if (propietario === usuarioAutenticado) {
+      invitaciones.push({
+        id: data[i][0] || '',
+        departamento: data[i][1] || '',
+        propietario: propietario,
+        inquilino: data[i][3] || '',
+        estado: data[i][4] || '',
+        fechaEnvio: data[i][5] || ''
+      });
+    }
   }
 
-  return invitaciones;
+  if (invitaciones.length === 0) {
+    Logger.log("⚠️ NO HAY INVITACIONES PARA ESTE USUARIO.");
+    return [{ mensaje: "No tienes invitaciones registradas." }];
+  }
+
+  Logger.log("✅ INVITACIONES ENCONTRADAS: " + JSON.stringify(invitaciones));
+  return JSON.stringify(invitaciones);
 }
 
 function enviarInvitacion(idDepartamento, emailInquilino) {
